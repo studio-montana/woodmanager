@@ -1,0 +1,2 @@
+
+ - 2018/03/13 13:13:42 - BD_Package - ERROR : Cannot update package installation [88] - req : UPDATE `wp_woodmanager_package_installation` SET `version` = '1.2.8', `date_modif` = '2018-03-13 14:13:42' WHERE `id` = '88' - 
