@@ -122,25 +122,15 @@ if (!function_exists("woodmanager_trace")):
  * write log trace in log file's theme
 * @param string $content
 */
-function woodmanager_trace($content){
-	$success = false;
-	$content = date("Y/m/d G:i:s").' - '.$content;
-	$trace_path = WOODMANAGER_PLUGIN_PATH.'/log/';
-	$trace_file = 'log.log';
-	$trace_file_path = $trace_path.$trace_file;
-	if (!file_exists($trace_path)){
-		if (!@mkdir($trace_path)){
-			// ERROR on create log folder
-			// TODO try write by FTP (fopen("ftp://user:password@example.com/log.log", "w");)
+function woodmanager_trace($log){
+	if (true === WP_DEBUG) {
+		if (is_array($log) || is_object($log)) {
+			return error_log("PHP Info:\t".print_r($log, true));
+		} else {
+			return error_log("PHP Info:\t".$log);
 		}
 	}
-	if (@file_put_contents($trace_file_path, "\n - ".$content, FILE_APPEND)){
-		$success = true;
-	}else{
-		// ERROR on write log file
-		// TODO try write by FTP (fopen("ftp://user:password@example.com/log.log", "w");)
-	}
-	return $success;
+	return false;
 }
 endif;
 
@@ -295,7 +285,12 @@ function woodmanager_get_package_latest_release($package_slug){
 			$github_clientsecret = woodmanager_get_option('github-clientsecret');
 			if (!empty($github_url) && !empty($github_user)){
 				$url = $github_url."repos/".$github_user."/".$package->slug."/releases/latest";
-				$wp_remote = wp_remote_get($url, array('user' => $github_clientid.':'.$github_clientsecret, 'sslverify' => false));
+				$wp_remote = wp_remote_get($url, array(
+						'headers' => array(
+								'Authorization' => 'Basic ' . base64_encode($github_clientid.':'.$github_clientsecret)
+						),
+						'sslverify' => false
+				));
 				$github_release = wp_remote_retrieve_body($wp_remote);
 			}
 		}
@@ -316,41 +311,52 @@ function woodmanager_get_package_latest_release($package_slug){
 				$last_release_arr = @json_decode($last_release, true);
 			if (!empty($github_release))
 				$github_release_arr = @json_decode($github_release, true);
+
+			woodmanager_trace("last_release_arr : " . var_export($last_release_arr, true));
+			woodmanager_trace("github_release_arr : " . var_export($github_release_arr, true));
+			
+			if (isset($github_release_arr['tag_name']) && isset($last_release_arr['tag_name'])) {
 	
-			if (version_compare($github_release_arr['tag_name'], $last_release_arr['tag_name'])){
-				$new_release = array();
-				// release version
-				$new_release['tag_name'] = '';
-				if (isset($github_release_arr['tag_name']))
-					$new_release['tag_name'] = $github_release_arr['tag_name'];
-				// release date
-				$new_release['published_at'] ='';
-				if (isset($github_release_arr['published_at']))
-					$new_release['published_at'] = $github_release_arr['published_at'];
-				// release comment
-				$new_release['body'] ='';
-				if (isset($github_release_arr['body']))
-					$new_release['body'] = $github_release_arr['body'];
-				// release zip url
-				$new_release['zipball_url'] = '';
-				if (isset($github_release_arr['zipball_url'])){
-					$ball = woodmanager_download_package($package->slug, $github_release_arr['zipball_url'], '.zip', $new_release['tag_name']);
-					$new_release['zipball_url'] = $ball['url'];
+				if (version_compare($github_release_arr['tag_name'], $last_release_arr['tag_name'])){
+					$new_release = array();
+					// release version
+					$new_release['tag_name'] = '';
+					if (isset($github_release_arr['tag_name']))
+						$new_release['tag_name'] = $github_release_arr['tag_name'];
+					// release date
+					$new_release['published_at'] ='';
+					if (isset($github_release_arr['published_at']))
+						$new_release['published_at'] = $github_release_arr['published_at'];
+					// release comment
+					$new_release['body'] ='';
+					if (isset($github_release_arr['body']))
+						$new_release['body'] = $github_release_arr['body'];
+					// release zip url
+					$new_release['zipball_url'] = '';
+					if (isset($github_release_arr['zipball_url'])){
+						$ball = woodmanager_download_package($package->slug, $github_release_arr['zipball_url'], '.zip', $new_release['tag_name']);
+						$new_release['zipball_url'] = $ball['url'];
+					}
+					// release tar url
+					$new_release['tarball_url'] = '';
+					if (isset($github_release_arr['tarball_url'])){
+						$ball = woodmanager_download_package($package->slug, $github_release_arr['tarball_url'], '.tar.gz', $new_release['tag_name']);
+						$new_release['tarball_url'] = $ball['url'];
+					}
+					// update release
+					$res = BD_Package::update_package($package, array('package_release' => json_encode($new_release), 'package_release_github' => $github_release, 'package_release_date' => current_time('mysql')));
+		
+					$data = json_encode($new_release);
+						
+				}else{
+					if (!empty($last_release)){
+						$data = $last_release;
+					}
 				}
-				// release tar url
-				$new_release['tarball_url'] = '';
-				if (isset($github_release_arr['tarball_url'])){
-					$ball = woodmanager_download_package($package->slug, $github_release_arr['tarball_url'], '.tar.gz', $new_release['tag_name']);
-					$new_release['tarball_url'] = $ball['url'];
-				}
-				// update release
-				$res = BD_Package::update_package($package, array('package_release' => json_encode($new_release), 'package_release_github' => $github_release, 'package_release_date' => current_time('mysql')));
-	
-				$data = json_encode($new_release);
-					
 			}else{
-				if (!empty($last_release))
+				if (!empty($last_release)) {
 					$data = $last_release;
+				}
 			}
 		}
 	}
