@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Plugin Name: Wood Manager
+ * Plugin Name: WoodManager
  * Description: Manage your wooden packages easily
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: Studio Montana
  * Author URI: http://www.studio-montana.com/
  * License: GPL2
@@ -47,8 +47,6 @@ define('WOODMANAGER_PLUGIN_CONFIG_FOLDER', 'core/commons/config/');
 define('WOODMANAGER_PLUGIN_POST_TYPES', 'core/post-types/');
 define('WOODMANAGER_PLUGIN_TEMPLATES_FOLDER', 'templates/');
 
-define('WOODMANAGER_UNINSTALL_DROPING_DATA', false); // true only for dev (erase DB)
-
 /**
  * WoodManager REPOSITORY PATHS & URLS
  */
@@ -90,6 +88,7 @@ if(!class_exists('WoodManager')){
 			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-profile.php');
 			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-key.php');
 			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-update.php');
+			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-release.php');
 			
 			/** post types */
 			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_POST_TYPES.'post-type-package.php');

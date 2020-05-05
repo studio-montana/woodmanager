@@ -49,20 +49,22 @@ if (!$can_update){
 				<input name="meta_package_slug" id="meta_package_slug" type="text" placeholder="my-package" value="<?php echo $package_slug; ?>" />
 			</td>
 		</tr>
+		<?php $bd_package = null;
+		if (!empty($package_slug)){
+			$bd_package = BD_Package::get_package_by_slug($package_slug);
+		} ?>
 		<tr>
-			<?php 
-			$free = 'false';
-			if (!empty($package_slug)){
-				global $wpdb;
-				$bd_package = BD_Package::get_package_by_slug($package_slug);
-				if (!empty($bd_package)){
-					$free = $bd_package->free;
-				}
-			}
-			?>
+			<?php $free = is_object($bd_package) ? $bd_package->free : 'false'; ?>
 			<td><label for="meta_package_free"><?php _e("Package free"); ?></label></td>
 			<td>
-				<input name="meta_package_free" id="meta_package_free" type="checkbox" <?php if (!empty($bd_package->free) && $bd_package->free == 'true'){ ?>checked="checked" <?php } ?>/>
+				<input name="meta_package_free" id="meta_package_free" type="checkbox" <?php if ($free == 'true'){ ?>checked="checked" <?php } ?>/>
+			</td>
+		</tr>
+		<tr>
+			<?php $separate_major_releases = is_object($bd_package) ? $bd_package->separate_major_releases : 'false'; ?>
+			<td><label for="meta_package_separate_major_releases"><?php _e("Separate major releases"); ?></label></td>
+			<td>
+				<input name="meta_package_separate_major_releases" id="meta_package_separate_major_releases" type="checkbox" <?php if ($separate_major_releases == 'true'){ ?>checked="checked" <?php } ?>/>
 			</td>
 		</tr>
 	</table>

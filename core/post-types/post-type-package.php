@@ -64,7 +64,7 @@ function woodmanager_package_admin_init() {
 	add_meta_box('woodmanager-package-keys', __( 'Package keys', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_keys', 'package', 'normal', 'high');
 	add_meta_box('woodmanager-package-installations', __( 'Package installations', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_installations', 'package', 'normal', 'high');
 	add_meta_box('woodmanager-package-updates', __( 'Package updates', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_updates', 'package', 'normal', 'high');
-	add_meta_box('woodmanager-package-releases', __( 'Package release', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_releases', 'package', 'normal', 'high');
+	add_meta_box('woodmanager-package-releases', __( 'Package releases', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_releases', 'package', 'normal', 'high');
 }
 add_action('admin_init', 'woodmanager_package_admin_init');
 
@@ -128,8 +128,13 @@ function woodmanager_package_save_post($post_id){
 			$id_bd_package = null;
 			$data = array();
 			$data['free'] = 'false';
-			if (isset($_POST['meta_package_free']) && !empty($_POST['meta_package_free']) && $_POST['meta_package_free'] == 'on')
+			if (isset($_POST['meta_package_free']) && !empty($_POST['meta_package_free']) && $_POST['meta_package_free'] == 'on') {
 				$data['free'] = 'true';
+			}
+			$data['separate_major_releases'] = 'false';
+			if (isset($_POST['meta_package_separate_major_releases']) && !empty($_POST['meta_package_separate_major_releases']) && $_POST['meta_package_separate_major_releases'] == 'on') {
+				$data['separate_major_releases'] = 'true';
+			}
 
 			$bd_package = BD_Package::get_package_by_slug($meta_package_slug);
 			if (!empty($bd_package)){
@@ -180,12 +185,13 @@ function woodmanager_package_save_post($post_id){
 					}
 					// clean deleted key
 					foreach ($existing_keys as $existing_key){
-						if (!in_array($existing_key->id, $updated_key_ids))
+						if (!in_array($existing_key->id, $updated_key_ids)) {
 							BD_Package_Key::delete_package_key($existing_key->id);
+						}
 					}
 				}
 			}else{
-				woodmanager_trace("post-type-package - ERROR : no id retrieve");
+				woodmanager_trace_error("post-type-package - ERROR : no id retrieve");
 			}
 		}else{
 			delete_post_meta($original_id, 'meta_package_slug');

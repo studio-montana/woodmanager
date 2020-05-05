@@ -22,6 +22,10 @@
  */
 defined('ABSPATH') or die("Go Away!");
 
+function woodmanager_package_release_version_compare($release_1, $release_2) {
+	return version_compare($release_1->version, $release_2->version);
+}
+
 if (!function_exists("woodmanager_clean")):
 /**
  * Sanitize $var
@@ -117,9 +121,19 @@ function woodmanager_get_original_post($post){
 }
 endif;
 
-if (!function_exists("woodmanager_trace")):
 /**
- * write log trace in log file's theme
+ * write error log
+* @param string $content
+*/
+function woodmanager_trace_error($log){
+	if (is_array($log) || is_object($log)) {
+		return error_log("PHP Error:\t".print_r($log, true));
+	}
+	return error_log("PHP Error:\t".$log);
+}
+
+/**
+ * write log
 * @param string $content
 */
 function woodmanager_trace($log){
@@ -132,7 +146,6 @@ function woodmanager_trace($log){
 	}
 	return false;
 }
-endif;
 
 if (!function_exists("woodmanager_is_active_package")):
 /**
@@ -241,6 +254,105 @@ function woodmanager_package_update($package_slug = '', $host = '', $version = '
 }
 endif;
 
+/**
+ * Fetch Github repository for this package if necessary to update releases in our DB
+ * @param string|BD_Package $package package object or package's slug
+ * @param boolean $force_fetch force github fecthing, otherwise we keep calm with time interval
+ */
+function woodmanager_update_package_releases($package, $force_fetch = false) {
+	if (!is_object($package)) {
+		$package = BD_Package::get_package_by_slug($package);
+	}
+	if ($package){
+		$fetch_github = true;
+		$fetch_github_error = false;
+		$last_update = $package->last_update;
+		if (!empty($last_update) && !$force_fetch){
+			$last_update = new DateTime($last_update);
+			$github_update_interval = woodmanager_get_option('github-update-interval', 'PT1H');
+			if (!empty($github_update_interval)) {
+				$last_update->add(new DateInterval($github_update_interval));
+			}
+			$now = new DateTime(current_time('mysql'));
+			if ($last_update > $now){
+				$fetch_github = false;
+			}
+		}
+		if ($fetch_github || $force_fetch){
+			/**
+			 * Fetch Github API to retrieve all package releases
+			 */
+			$github_url = woodmanager_get_option('github-api-url');
+			$github_user = woodmanager_get_option('github-user');
+			$github_clientid = woodmanager_get_option('github-clientid');
+			$github_clientsecret = woodmanager_get_option('github-clientsecret');
+			if (!empty($github_url) && !empty($github_user)){
+				$url = $github_url."repos/".$github_user."/".$package->slug."/releases";
+				$wp_remote = wp_remote_get($url, array(
+						/**
+						 * NOTE
+						* - since 02/2020 github doesn't support authentication parameters as query_string
+						* - we must use 'user' header parameter with clientid:clientsecret
+						* - more information : https://developer.github.com/changes/2020-02-10-deprecating-auth-through-query-param/
+						*/
+						'headers' => array(
+								'Authorization' => 'Basic ' . base64_encode($github_clientid.':'.$github_clientsecret)
+						),
+						'sslverify' => false
+				));
+				if (is_wp_error($wp_remote)) {
+					$fetch_github_error = true;
+				} else {
+					/**
+					 * Update package's releases in DB
+					 */
+					$github_releases = wp_remote_retrieve_body($wp_remote);
+					if (!empty($github_releases)) {
+						$github_releases = @json_decode($github_releases, true);
+						foreach ($github_releases as $github_release) {
+							if (!isset($github_release['tag_name'])) {
+								woodmanager_trace_error("La release Github n'a pas de 'tag_name' - elle ne peut être traitée - package {$package->slug}");
+							} else {
+								if (!BD_Package_Release::version_exists($package, $github_release['tag_name'])) {
+									
+									/** release public info (available via API) */
+									$info = array(
+											'tag_name' => $github_release['tag_name'],
+											'published_at' => $github_release['published_at'],
+											'body' => $github_release['body'],
+											'prerelease' => $github_release['prerelease'],
+											'zipball_url' => '',
+											'tarball_url' => '',
+									);
+									if (isset($github_release['zipball_url'])){
+										$ball = woodmanager_download_package($package->slug, $github_release['zipball_url'], '.zip', $info['tag_name'], $github_release['prerelease'] === true);
+										$info['zipball_url'] = $ball['url'];
+									}
+									if (isset($github_release['tarball_url'])){
+										$ball = woodmanager_download_package($package->slug, $github_release['tarball_url'], '.tar.gz', $info['tag_name'], $github_release['prerelease'] === true);
+										$info['tarball_url'] = $ball['url'];
+									}
+
+									/** create release in our DB */
+									BD_Package_Release::create_package_release(array(
+											"id_package" => $package->id,
+											"version" => $github_release['tag_name'],
+											"type" => isset($github_release['prerelease']) && $github_release['prerelease'] === true ? 'prerelease' : 'release',
+											"info" => @json_encode($info),
+											"info_repository" => @json_encode($github_release),
+									));
+								} else {
+									// is it necessary to update all existing releases ?
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 if (!function_exists("woodmanager_get_package_latest_release")):
 /**
  * retrieve package's latest release
@@ -248,133 +360,75 @@ if (!function_exists("woodmanager_get_package_latest_release")):
 * @param string $format : ARRAY_A | OBJECT
 * @return Ambigous <array, stdClass>
 */
-function woodmanager_get_package_latest_release($package_slug){
-
-	$data = '';
+function woodmanager_get_package_latest_release($package_slug, $package_version){
 
 	$package = BD_Package::get_package_by_slug($package_slug);
-	if (!empty($package)){
-		
-		$relead = true;
-		$now = new DateTime(current_time('mysql'));
-
-		$last_release = $package->package_release;
-		$last_release_date = $package->package_release_date;
-		if (!empty($last_release_date)){
-			$last_release_datetime = new DateTime($last_release_date);
-			$github_update_interval = woodmanager_get_option('github-update-interval');
-			if (!empty($github_update_interval))
-				$last_release_datetime->add(new DateInterval($github_update_interval)); // PT1H
-			if ($last_release_datetime > $now){
-				$relead = false;
-			}
-		}
-		
-		$wp_remote = null;
-		$github_release = '';
-		if ($relead){
-			/** 
-			 * NOTE
-			 * - since 02/2020 github doesn't support authentication parameters as query_string
-			 * - we must use 'user' header parameter with clientid:clientsecret
-			 * - more information : https://developer.github.com/changes/2020-02-10-deprecating-auth-through-query-param/
-			 */
-			$github_url = woodmanager_get_option('github-api-url');
-			$github_user = woodmanager_get_option('github-user');
-			$github_clientid = woodmanager_get_option('github-clientid');
-			$github_clientsecret = woodmanager_get_option('github-clientsecret');
-			if (!empty($github_url) && !empty($github_user)){
-				$url = $github_url."repos/".$github_user."/".$package->slug."/releases/latest";
-				$wp_remote = wp_remote_get($url, array(
-						'headers' => array(
-								'Authorization' => 'Basic ' . base64_encode($github_clientid.':'.$github_clientsecret)
-						),
-						'sslverify' => false
-				));
-				$github_release = wp_remote_retrieve_body($wp_remote);
-			}
-		}
-		
-		if (is_wp_error($wp_remote)){
-			if (!empty($last_release)){
-				$data = $last_release;
-			}else{
-				$data = json_encode(array("error" => __("An error occurs during this process")));
-			}
-			woodmanager_trace("Error during Github connection : ".var_export($wp_remote, true));
-		}else{
+	if (!is_object($package)){
+		// EXIT
+		return json_encode(array("error" => __("No package found for slug '{$package->slug}'")));
+	}
+	// Fetch Github API to retrieve releases (if necessary) and update our DB
+	woodmanager_update_package_releases($package);
 	
-			// compare versions
-			$last_release_arr = array();
-			$github_release_arr = array();
-			if (!empty($last_release))
-				$last_release_arr = @json_decode($last_release, true);
-			if (!empty($github_release))
-				$github_release_arr = @json_decode($github_release, true);
-
-			woodmanager_trace("last_release_arr : " . var_export($last_release_arr, true));
-			woodmanager_trace("github_release_arr : " . var_export($github_release_arr, true));
-			
-			if (isset($github_release_arr['tag_name']) && isset($last_release_arr['tag_name'])) {
+	// Check if package has 'separate-major-releases' option activated
+	$separate_major_releases = $package->separate_major_releases === 'true';
 	
-				if (version_compare($github_release_arr['tag_name'], $last_release_arr['tag_name'])){
-					$new_release = array();
-					// release version
-					$new_release['tag_name'] = '';
-					if (isset($github_release_arr['tag_name']))
-						$new_release['tag_name'] = $github_release_arr['tag_name'];
-					// release date
-					$new_release['published_at'] ='';
-					if (isset($github_release_arr['published_at']))
-						$new_release['published_at'] = $github_release_arr['published_at'];
-					// release comment
-					$new_release['body'] ='';
-					if (isset($github_release_arr['body']))
-						$new_release['body'] = $github_release_arr['body'];
-					// release zip url
-					$new_release['zipball_url'] = '';
-					if (isset($github_release_arr['zipball_url'])){
-						$ball = woodmanager_download_package($package->slug, $github_release_arr['zipball_url'], '.zip', $new_release['tag_name']);
-						$new_release['zipball_url'] = $ball['url'];
-					}
-					// release tar url
-					$new_release['tarball_url'] = '';
-					if (isset($github_release_arr['tarball_url'])){
-						$ball = woodmanager_download_package($package->slug, $github_release_arr['tarball_url'], '.tar.gz', $new_release['tag_name']);
-						$new_release['tarball_url'] = $ball['url'];
-					}
-					// update release
-					$res = BD_Package::update_package($package, array('package_release' => json_encode($new_release), 'package_release_github' => $github_release, 'package_release_date' => current_time('mysql')));
-		
-					$data = json_encode($new_release);
-						
-				}else{
-					if (!empty($last_release)){
-						$data = $last_release;
-					}
-				}
-			}else{
-				if (!empty($last_release)) {
-					$data = $last_release;
-				}
+	// Retrieve releases wich version is greater than client package version
+	$releases = null;
+	list($v_major, $v_minor, $v_corrective) = explode(".", $package_version);
+	if ($separate_major_releases) {
+		$sql_where = "id_package = {$package->id}";
+		$sql_where .= " AND CONCAT(";
+		$sql_where .= "LPAD(SUBSTRING_INDEX(SUBSTRING_INDEX(version,'.',2),'.',-1),10,'0'), ";
+		$sql_where .= "LPAD(SUBSTRING_INDEX(SUBSTRING_INDEX(version,'.',3),'.',-1),10,'0')";
+		$sql_where .= ") > CONCAT(LPAD({$v_minor},10,'0'), LPAD({$v_corrective},10,'0'))";
+		$sql_where .= " AND LPAD(SUBSTRING_INDEX(SUBSTRING_INDEX(version,'.',1),'.',-1),10,'0') = LPAD({$v_major},10,'0')";
+		$releases = BD_Package_Release::get_package_releases($sql_where);
+	} else {
+		$sql_where = "id_package = {$package->id} ";
+		$sql_where .= "AND CONCAT(";
+		$sql_where .= "LPAD(SUBSTRING_INDEX(SUBSTRING_INDEX(version,'.',1),'.',-1),10,'0'),";
+		$sql_where .= "LPAD(SUBSTRING_INDEX(SUBSTRING_INDEX(version,'.',2),'.',-1),10,'0'),";
+		$sql_where .= "LPAD(SUBSTRING_INDEX(SUBSTRING_INDEX(version,'.',3),'.',-1),10,'0')";
+		$sql_where .= ") > CONCAT(LPAD({$v_major},10,'0'), LPAD({$v_minor},10,'0'), LPAD({$v_corrective},10,'0'))";
+		$releases = BD_Package_Release::get_package_releases($sql_where);
+	}
+	
+	// Retrieve latest release from available releases
+	$latest_release = null;
+	if (!empty($releases)) {
+		// Maybe more than one release may be retrieved, it depends on client version
+		// So we keep the latest
+		foreach ($releases as $release) {
+			if (!is_object($latest_release)) {
+				$latest_release = $release;
+				continue;
+			}
+			if (version_compare($release->version, $latest_release->version) > 0) {
+				$latest_release = $release;
 			}
 		}
 	}
-	return $data;
+	
+	if (!is_object($latest_release)) {
+		// EXIT
+		return json_encode(array("error" => __("No release found for package '{$package->slug}'")));
+	}
+	
+	return $latest_release->info;
 }
 endif;
 
 if (!function_exists("woodmanager_download_package")):
-function woodmanager_download_package($package, $ball_url, $ext, $version = ''){
+function woodmanager_download_package($package_slug, $ball_url, $ext, $version, $is_prerelease = false){
 	$final_path = '';
 	$final_url = '';
-	if (!empty($package) && !empty($ball_url) && !empty($ext)){
-		$date = current_time('mysql');
-		$hash_1 = md5($date);
-		$hash_2 = md5($package.$date);
-		$final_path = WOODMANAGER_PLUGIN_REPOSITORY_PATH.$package.'-'.$hash_1.'/'.$hash_2.$ext;
-		$final_url = WOODMANAGER_PLUGIN_REPOSITORY_URL.$package.'-'.$hash_1.'/'.$hash_2.$ext;
-
+	if (!empty($package_slug) && !empty($ball_url) && !empty($ext)){
+		
+		$final_filename = $is_prerelease ? "prerelease-{$version}{$ext}" : "release-{$version}{$ext}";
+		$final_path = WOODMANAGER_PLUGIN_REPOSITORY_PATH.$package_slug."/".$final_filename;
+		$final_url = WOODMANAGER_PLUGIN_REPOSITORY_URL.$package_slug."/".$final_filename;
+		
 		if (file_exists($final_path)){
 			unlink($final_path);
 		}else{

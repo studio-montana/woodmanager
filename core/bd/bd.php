@@ -27,8 +27,6 @@ require_once(ABSPATH.'wp-admin/includes/upgrade.php');
 
 class WoodManager_BD{
 
-	public static $woodmanager_db_version = '1.0';
-
 	/**
 	 * Construct the object
 	 */
@@ -40,27 +38,40 @@ class WoodManager_BD{
 	 * Install WOODMANAGER BDD tables
 	 */
 	public static function install(){
+		global $wpdb;
+		
 		self::create_table_package();
 		self::create_table_package_installation();
 		self::create_table_package_update();
 		self::create_table_package_profile();
 		self::create_table_package_key();
-		update_option("woodmanager_db_version", self::$woodmanager_db_version);
+		
+		
+		// Upgrades
+		$current_version = get_option ("woodmanager_db_version", "0.0");
+		
+		/**
+		 * Version 1.1
+		 */
+		$version_upgrade = "1.1";
+		if (version_compare ( $current_version, $version_upgrade ) < 0) {
+			
+			self::create_table_package_release();
+
+			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` CHANGE `package_release_date` `last_update` datetime;");
+			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` ADD COLUMN `separate_major_releases` varchar(20) NULL AFTER `last_update`;");
+			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` DROP `package_release`;");
+			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` DROP `package_release_github`;");
+			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` DROP `package_release_date`;");
+			
+			update_option("woodmanager_db_version", $version_upgrade);
+		}
 	}
 
 	/**
 	 * Uninstall WOODMANAGER BDD tables
 	 */
-	public static function uninstall(){
-		if (defined('WOODMANAGER_UNINSTALL_DROPING_DATA') && WOODMANAGER_UNINSTALL_DROPING_DATA == true){
-			self::drop_table_package();
-			self::drop_table_package_installation();
-			self::drop_table_package_update();
-			self::drop_table_package_profile();
-			self::drop_table_package_key();
-			update_option("woodmanager_db_version", "");
-		}
-	}
+	public static function uninstall(){}
 
 	public static function get_package_table_name($wpdb){
 		return $wpdb->prefix . WOODMANAGER_PLUGIN_NAME."_package";
@@ -82,6 +93,10 @@ class WoodManager_BD{
 		return $wpdb->prefix . WOODMANAGER_PLUGIN_NAME."_package_key";
 	}
 
+	public static function get_package_release_table_name($wpdb){
+		return $wpdb->prefix . WOODMANAGER_PLUGIN_NAME."_package_release";
+	}
+
 	/**
 	 * create woodmanager_package sql data table
 	 */
@@ -99,7 +114,7 @@ class WoodManager_BD{
 			$charset_collate .= " COLLATE {$wpdb->collate}";
 
 		// sql create
-		$sql = "CREATE TABLE $table_name (
+		$sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
 		id bigint(20) NOT NULL AUTO_INCREMENT,
 		slug varchar(255) NULL,
 		free varchar(20) NULL,
@@ -132,7 +147,7 @@ class WoodManager_BD{
 			$charset_collate .= " COLLATE {$wpdb->collate}";
 
 		// sql create
-		$sql = "CREATE TABLE $table_name (
+		$sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
 		id bigint(20) NOT NULL AUTO_INCREMENT,
 		id_package bigint(20) NULL,
 		host varchar(255) NULL,
@@ -163,7 +178,7 @@ class WoodManager_BD{
 			$charset_collate .= " COLLATE {$wpdb->collate}";
 
 		// sql create
-		$sql = "CREATE TABLE $table_name (
+		$sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
 		id bigint(20) NOT NULL AUTO_INCREMENT,
 		id_package bigint(20) NULL,
 		host varchar(255) NULL,
@@ -194,7 +209,7 @@ class WoodManager_BD{
 			$charset_collate .= " COLLATE {$wpdb->collate}";
 
 		// sql create
-		$sql = "CREATE TABLE $table_name (
+		$sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
 		id bigint(20) NOT NULL AUTO_INCREMENT,
 		id_package bigint(20) NULL,
 		id_user bigint(20) NULL,
@@ -225,7 +240,7 @@ class WoodManager_BD{
 			$charset_collate .= " COLLATE {$wpdb->collate}";
 
 		// sql create
-		$sql = "CREATE TABLE $table_name (
+		$sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
 		id bigint(20) NOT NULL AUTO_INCREMENT,
 		id_package bigint(20) NULL,
 		id_user bigint(20) NULL,
@@ -235,6 +250,38 @@ class WoodManager_BD{
 		date_modif datetime NULL,
 		UNIQUE KEY id (id)
 		) $charset_collate;";
+
+		// table creation
+		dbDelta($sql);
+	}
+	
+	/**
+	 * create woodmanager_package_release sql data table
+	 */
+	private static function create_table_package_release(){
+		global $wpdb;
+
+		// name
+		$table_name = self::get_package_release_table_name($wpdb);
+
+		// charset collate
+		$charset_collate = '';
+		if (!empty($wpdb->charset))
+			$charset_collate = "DEFAULT CHARACTER SET {$wpdb->charset}";
+		if (!empty($wpdb->collate))
+			$charset_collate .= " COLLATE {$wpdb->collate}";
+			
+		// sql create
+		$sql = "CREATE TABLE IF NOT EXISTS `{$table_name}` ( ";
+		$sql .= "id bigint(20) NOT NULL AUTO_INCREMENT,";
+		$sql .= "id_package bigint(20) NULL,"; // package (FOREIGN KEY)
+		$sql .= "version varchar(255) NULL,"; // format x.x.x
+		$sql .= "type varchar(255) NULL,"; // release | prerelease
+		$sql .= "info text NULL,"; // public information for woodmanager API - json
+		$sql .= "info_repository text NULL,"; // private information from Github repository - json
+		$sql .= "date datetime NULL,";
+		$sql .= "date_modif datetime NULL,";
+		$sql .= "UNIQUE KEY id (id) ) {$charset_collate};";
 
 		// table creation
 		dbDelta($sql);
@@ -286,6 +333,16 @@ class WoodManager_BD{
 	private static function drop_table_package_key(){
 		global $wpdb;
 		$table_name = self::get_package_key_table_name($wpdb);
+		$sql = "DROP TABLE ". $table_name;
+		$wpdb->query($sql);
+	}
+
+	/**
+	 * drop woodmanager_package_release sql data table
+	 */
+	private static function drop_table_package_release(){
+		global $wpdb;
+		$table_name = self::get_package_release_table_name($wpdb);
 		$sql = "DROP TABLE ". $table_name;
 		$wpdb->query($sql);
 	}

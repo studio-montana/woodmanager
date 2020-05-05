@@ -42,51 +42,53 @@ if (!$can_update){
 		<a href="<?php echo get_edit_post_link($original_id); ?>" class="button"><?php _e("Edit original item", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></a>	
 	</p>
 	<?php
-}else{ ?>
-	<table>
-		<?php 
-		$has_package = false;
-		$bd_package = null;
-		$package_slug = @get_post_meta($original_id, 'meta_package_slug', true);
-		$installations = array();
-		if (!empty($package_slug)){
-			$bd_package = BD_Package::get_package_by_slug($package_slug);
-			if(!empty($bd_package)){
-				$has_package = true;
-			}
+}else{ 
+	$has_package = false;
+	$bd_package = null;
+	$package_slug = @get_post_meta($original_id, 'meta_package_slug', true);
+	$installations = array();
+	if (!empty($package_slug)){
+		$bd_package = BD_Package::get_package_by_slug($package_slug);
+		if(!empty($bd_package)){
+			$has_package = true;
 		}
-		if ($has_package){
-			$date = $bd_package->package_release_date;
-			$date_s = '';
-			if (!empty($date)){
-				$date = new DateTime($date);
-				$date_s = $date->format("Y-m-d H:i:s");
-			}
-			?><tr><td><h4><?php _e("Release update", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></h4></td></tr><?php
-			if (!empty($date_s)){
-				?><tr><td style="padding-left: 24px;"><?php echo $date_s?></td></tr><?php
-			}else{
-				?><tr><td style="padding-left: 24px;"><?php _e("no date for this package", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></td></tr><?php
-			}
-			
-			$release = $bd_package->package_release;
-			?><tr><td><h4><?php _e("Release", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></h4></td></tr><?php
-			if (!empty($release)){
-				?><tr><td style="padding-left: 24px;"><?php echo $release?></td></tr><?php
-			}else{
-				?><tr><td style="padding-left: 24px;"><?php _e("no release for this package", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></td></tr><?php
-			}
-			
-			$release_github = $bd_package->package_release_github;
-			?><tr><td><h4><?php _e("Release Github", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></h4></td></tr><?php
-			if (!empty($release_github)){
-				?><tr><td style="padding-left: 24px;"><?php echo $release_github?></td></tr><?php
-			}else{
-				?><tr><td style="padding-left: 24px;"><?php _e("no release github for this package", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></td></tr><?php
-			}
-		}else{
-			?><tr><td><span><?php _e("no package", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></span></td></tr><?php
+	}
+	if ($has_package){
+		$date = $bd_package->last_update;
+		$date_s = '';
+		if (!empty($date)){
+			$date = new DateTime($date);
+			$date_s = $date->format("Y-m-d H:i:s");
 		}
 		?>
-	</table>
-<?php } ?>
+		<h4><?php _e("Last Github fetch", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?> : <em><?php
+		if (!empty($date_s)){
+			echo $date_s;
+		}else{
+			_e("no fetch", WOODMANAGER_PLUGIN_TEXT_DOMAIN);
+		} ?>
+		</em></h4>
+		<table>
+			<tr>
+				<th><?php _e("version", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></th>
+				<th><?php _e("type", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></th>
+			</tr>
+			<?php	
+			$releases = BD_Package_Release::get_package_releases("id_package = {$bd_package->id}");
+			
+			if (!empty($releases)) {
+				usort($releases, 'woodmanager_package_release_version_compare');
+				foreach ($releases as $release) {
+					?>
+					<tr>
+						<td><?php echo $release->version; ?></td>
+						<td><?php echo $release->type; ?></td>
+					</tr>
+					<?php
+				}
+			} else {
+				?><tr><td colspan="3"><?php _e("no release for this package", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></td></tr><?php
+			} ?>
+		</table>
+	<?php }
+} ?>
