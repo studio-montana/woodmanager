@@ -327,74 +327,102 @@ function woodmanager_update_package_releases($package, $force_fetch = false) {
 		$package = BD_Package::get_package_by_slug($package);
 	}
 	if ($package){
-		$fetch_github = true;
-		$fetch_github_error = false;
-		$last_repository_fetch = $package->last_repository_fetch;
-		if (!empty($last_repository_fetch) && !$force_fetch){
-			$last_repository_fetch = new DateTime($last_repository_fetch);
-			$github_update_interval = woodmanager_get_option('github-update-interval', 'PT1H');
-			if (!empty($github_update_interval)) {
-				$last_repository_fetch->add(new DateInterval($github_update_interval));
+		/** 
+		 * IMPORTANT : les sites clients peuvent faire des appels à des moment simultanés/rapprochés et cette fonction
+		 * peut prendre du temps (chargement des releases) => on doit donc se prémunir d'un update déjà en cours.
+		 * ATTENTION : cette function ne doit pas faire de return (sauf après mise à jour de l'option 'woodmanager_updating_releases'
+		 * en fin de process, sinon les update seront bloqués.
+		 */
+		$woodmanager_updating_releases = get_option('woodmanager_updating_releases', array());
+		if (in_array($package->slug, $woodmanager_updating_releases)) {
+			woodmanager_trace("##############################################################");
+			woodmanager_trace("Github release update is already processing - please try later");
+			woodmanager_trace("##############################################################");
+			return;
+		} else {
+			$woodmanager_updating_releases[] = $package->slug;
+			update_option('woodmanager_updating_releases', $woodmanager_updating_releases);
+			/** pas d'update en cours, on y va */
+			
+			$fetch_github = true;
+			$fetch_github_error = false;
+			$last_repository_fetch = $package->last_repository_fetch;
+			if (!empty($last_repository_fetch) && !$force_fetch){
+				$last_repository_fetch = new DateTime($last_repository_fetch);
+				$github_update_interval = woodmanager_get_option('github-update-interval', 'PT1H');
+				if (!empty($github_update_interval)) {
+					$last_repository_fetch->add(new DateInterval($github_update_interval));
+				}
+				$now = new DateTime(current_time('mysql'));
+				if ($last_repository_fetch > $now){
+					$fetch_github = false;
+				}
 			}
-			$now = new DateTime(current_time('mysql'));
-			if ($last_repository_fetch > $now){
-				$fetch_github = false;
-			}
-		}
-		if ($fetch_github || $force_fetch){
-			/**
-			 * Fetch Github API to retrieve all package releases
-			 */
-			$github_releases = woodmanager_fetch_github_releases($package);
-			if (!empty($github_releases)) {
-				foreach ($github_releases as $github_release) {
-					woodmanager_trace("Fetch Github - release => " . $github_release['tag_name']);
-					if (!isset($github_release['tag_name'])) {
-						woodmanager_trace_error("La release Github n'a pas de 'tag_name' - elle ne peut être traitée - package {$package->slug}");
-					} else {
-						if (!BD_Package_Release::version_exists($package, $github_release['tag_name'])) {
-								
-							/** release public info (available via API) */
-							$info = array(
-									'tag_name' => $github_release['tag_name'],
-									'published_at' => $github_release['published_at'],
-									'body' => $github_release['body'],
-									'prerelease' => $github_release['prerelease'],
-									'zipball_url' => '',
-									'tarball_url' => '',
-							);
-								
-							/** donwload zip and tar.gz */
-							if (isset($github_release['zipball_url'])){
-								$ball = woodmanager_download_package($package->slug, $github_release['zipball_url'], '.zip', $info['tag_name'], $github_release['prerelease'] === true);
-								$info['zipball_url'] = $ball['url'];
-							}
-							if (isset($github_release['tarball_url'])){
-								$ball = woodmanager_download_package($package->slug, $github_release['tarball_url'], '.tar.gz', $info['tag_name'], $github_release['prerelease'] === true);
-								$info['tarball_url'] = $ball['url'];
-							}
-					
-							/** create release in our DB */
-							BD_Package_Release::create_package_release(array(
-									"id_package" => $package->id,
-									"version" => $github_release['tag_name'],
-									"type" => isset($github_release['prerelease']) && $github_release['prerelease'] === true ? 'prerelease' : 'release',
-									"info" => @json_encode($info),
-									"info_repository" => @json_encode($github_release),
-							));
+			if ($fetch_github || $force_fetch){
+				/**
+				 * Fetch Github API to retrieve all package releases
+				 */
+				$github_releases = woodmanager_fetch_github_releases($package);
+				if (!empty($github_releases)) {
+					foreach ($github_releases as $github_release) {
+						woodmanager_trace("Fetch Github - release => " . $github_release['tag_name']);
+						if (!isset($github_release['tag_name'])) {
+							woodmanager_trace_error("La release Github n'a pas de 'tag_name' - elle ne peut être traitée - package {$package->slug}");
 						} else {
-							// it's not necessary to update existing releases
+							if (!BD_Package_Release::version_exists($package, $github_release['tag_name'])) {
+									
+								/** release public info (available via API) */
+								$info = array(
+										'tag_name' => $github_release['tag_name'],
+										'published_at' => $github_release['published_at'],
+										'body' => $github_release['body'],
+										'prerelease' => $github_release['prerelease'],
+										'zipball_url' => '',
+										'tarball_url' => '',
+								);
+									
+								/** donwload zip and tar.gz */
+								if (isset($github_release['zipball_url'])){
+									$ball = woodmanager_download_package($package->slug, $github_release['zipball_url'], '.zip', $info['tag_name'], $github_release['prerelease'] === true);
+									$info['zipball_url'] = $ball['url'];
+								}
+								/* if (isset($github_release['tarball_url'])){ // not used
+									$ball = woodmanager_download_package($package->slug, $github_release['tarball_url'], '.tar.gz', $info['tag_name'], $github_release['prerelease'] === true);
+									$info['tarball_url'] = $ball['url'];
+								} */
+						
+								/** create release in our DB */
+								BD_Package_Release::create_package_release(array(
+										"id_package" => $package->id,
+										"version" => $github_release['tag_name'],
+										"type" => isset($github_release['prerelease']) && $github_release['prerelease'] === true ? 'prerelease' : 'release',
+										"info" => @json_encode($info),
+										"info_repository" => @json_encode($github_release),
+								));
+							} else {
+								// it's not necessary to update existing releases
+							}
 						}
 					}
+				} else {
+					woodmanager_trace("Fetch Github - no release");
 				}
-			} else {
-				woodmanager_trace("Fetch Github - no release");
+			}
+
+			/**
+			 * IMPORTANT : on redonne la main pour les prochains update...
+			 */
+			$woodmanager_updating_releases = get_option('woodmanager_updating_releases', array());
+			if (in_array($package->slug, $woodmanager_updating_releases)) {
+				unset($woodmanager_updating_releases[array_search($package->slug, $woodmanager_updating_releases)]);
+				update_option('woodmanager_updating_releases', $woodmanager_updating_releases);
 			}
 		}
 	}
 }
 
 function woodmanager_fetch_github_releases($package, $url = null) {
+	$releases = array();
 	if (!is_object($package)) {
 		return false;
 	}
@@ -427,7 +455,6 @@ function woodmanager_fetch_github_releases($package, $url = null) {
 	if (is_wp_error($wp_remote)) {
 		return false;
 	} else {
-		$releases = array();
 		$wp_remote_body = wp_remote_retrieve_body($wp_remote);
 		if (!empty($wp_remote_body)) {
 			$fetched_releases = @json_decode($wp_remote_body, true);
