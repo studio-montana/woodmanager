@@ -72,6 +72,8 @@ if (!$can_update){
 			<tr>
 				<th><?php _e("version", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></th>
 				<th><?php _e("type", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></th>
+				<th><?php _e("local zip", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></th>
+				<th><?php _e("repository zip", WOODMANAGER_PLUGIN_TEXT_DOMAIN); ?></th>
 			</tr>
 			<?php	
 			$releases = BD_Package_Release::get_package_releases("id_package = {$bd_package->id}");
@@ -79,10 +81,14 @@ if (!$can_update){
 			if (!empty($releases)) {
 				usort($releases, 'woodmanager_package_release_version_compare');
 				foreach ($releases as $release) {
+					$info = !empty($release->info) ? json_decode($release->info, true) : array();
+					$info_repos = !empty($release->info) ? json_decode($release->info_repository, true) : array();
 					?>
 					<tr>
 						<td><?php echo $release->version; ?></td>
 						<td><?php echo $release->type; ?></td>
+						<td><?php echo isset($info['zipball_url']) ? '<a href="'.$info['zipball_url'].'" target="_blank">Download</a>' : 'aucun zip'; ?></td>
+						<td><?php echo isset($info_repos['zipball_url']) ? '<a href="'.$info_repos['zipball_url'].'" target="_blank">Download</a>' : 'aucun zip'; ?></td>
 					</tr>
 					<?php
 				}

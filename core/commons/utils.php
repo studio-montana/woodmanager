@@ -345,83 +345,124 @@ function woodmanager_update_package_releases($package, $force_fetch = false) {
 			/**
 			 * Fetch Github API to retrieve all package releases
 			 */
-			$github_url = woodmanager_get_option('github-api-url');
-			$github_user = woodmanager_get_option('github-user');
-			$github_clientid = woodmanager_get_option('github-clientid');
-			$github_clientsecret = woodmanager_get_option('github-clientsecret');
-			if (!empty($github_url) && !empty($github_user)){
-				$url = $github_url."repos/".$github_user."/".$package->slug."/releases";
-				woodmanager_trace("Fetch Github on {$url}");
-				$wp_remote = wp_remote_get($url, array(
-						/**
-						 * NOTE
-						* - since 02/2020 github doesn't support authentication parameters as query_string
-						* - we must use 'Authorization' header parameter with clientid:clientsecret
-						* - more information : https://developer.github.com/changes/2020-02-10-deprecating-auth-through-query-param/
-						*/
-						'headers' => array(
-								'Authorization' => 'Basic ' . base64_encode($github_clientid.':'.$github_clientsecret)
-						),
-						'sslverify' => false
-				));
-				if (is_wp_error($wp_remote)) {
-					$fetch_github_error = true;
-				} else {
-					/**
-					 * Update package's last_repository_fetch date
-					 */
-					BD_Package::update_package($package, array('last_repository_fetch' => current_time('mysql')));
-					
-					/**
-					 * Update package's releases in DB
-					 */
-					$github_releases = wp_remote_retrieve_body($wp_remote);
-					if (!empty($github_releases)) {
-						$github_releases = @json_decode($github_releases, true);
-						foreach ($github_releases as $github_release) {
-							if (!isset($github_release['tag_name'])) {
-								woodmanager_trace_error("La release Github n'a pas de 'tag_name' - elle ne peut être traitée - package {$package->slug}");
-							} else {
-								if (!BD_Package_Release::version_exists($package, $github_release['tag_name'])) {
-									
-									/** release public info (available via API) */
-									$info = array(
-											'tag_name' => $github_release['tag_name'],
-											'published_at' => $github_release['published_at'],
-											'body' => $github_release['body'],
-											'prerelease' => $github_release['prerelease'],
-											'zipball_url' => '',
-											'tarball_url' => '',
-									);
-									
-									/** donwload zip and tar.gz */
-									if (isset($github_release['zipball_url'])){
-										$ball = woodmanager_download_package($package->slug, $github_release['zipball_url'], '.zip', $info['tag_name'], $github_release['prerelease'] === true);
-										$info['zipball_url'] = $ball['url'];
-									}
-									if (isset($github_release['tarball_url'])){
-										$ball = woodmanager_download_package($package->slug, $github_release['tarball_url'], '.tar.gz', $info['tag_name'], $github_release['prerelease'] === true);
-										$info['tarball_url'] = $ball['url'];
-									}
-
-									/** create release in our DB */
-									BD_Package_Release::create_package_release(array(
-											"id_package" => $package->id,
-											"version" => $github_release['tag_name'],
-											"type" => isset($github_release['prerelease']) && $github_release['prerelease'] === true ? 'prerelease' : 'release',
-											"info" => @json_encode($info),
-											"info_repository" => @json_encode($github_release),
-									));
-								} else {
-									// it's not necessary to update existing releases
-								}
+			$github_releases = woodmanager_fetch_github_releases($package);
+			if (!empty($github_releases)) {
+				foreach ($github_releases as $github_release) {
+					woodmanager_trace("Fetch Github - release => " . $github_release['tag_name']);
+					if (!isset($github_release['tag_name'])) {
+						woodmanager_trace_error("La release Github n'a pas de 'tag_name' - elle ne peut être traitée - package {$package->slug}");
+					} else {
+						if (!BD_Package_Release::version_exists($package, $github_release['tag_name'])) {
+								
+							/** release public info (available via API) */
+							$info = array(
+									'tag_name' => $github_release['tag_name'],
+									'published_at' => $github_release['published_at'],
+									'body' => $github_release['body'],
+									'prerelease' => $github_release['prerelease'],
+									'zipball_url' => '',
+									'tarball_url' => '',
+							);
+								
+							/** donwload zip and tar.gz */
+							if (isset($github_release['zipball_url'])){
+								$ball = woodmanager_download_package($package->slug, $github_release['zipball_url'], '.zip', $info['tag_name'], $github_release['prerelease'] === true);
+								$info['zipball_url'] = $ball['url'];
 							}
+							if (isset($github_release['tarball_url'])){
+								$ball = woodmanager_download_package($package->slug, $github_release['tarball_url'], '.tar.gz', $info['tag_name'], $github_release['prerelease'] === true);
+								$info['tarball_url'] = $ball['url'];
+							}
+					
+							/** create release in our DB */
+							BD_Package_Release::create_package_release(array(
+									"id_package" => $package->id,
+									"version" => $github_release['tag_name'],
+									"type" => isset($github_release['prerelease']) && $github_release['prerelease'] === true ? 'prerelease' : 'release',
+									"info" => @json_encode($info),
+									"info_repository" => @json_encode($github_release),
+							));
+						} else {
+							// it's not necessary to update existing releases
 						}
+					}
+				}
+			} else {
+				woodmanager_trace("Fetch Github - no release");
+			}
+		}
+	}
+}
+
+function woodmanager_fetch_github_releases($package, $url = null) {
+	if (!is_object($package)) {
+		return false;
+	}
+	$github_url = woodmanager_get_option('github-api-url');
+	$github_user = woodmanager_get_option('github-user');
+	$github_clientid = woodmanager_get_option('github-clientid');
+	$github_clientsecret = woodmanager_get_option('github-clientsecret');
+	if (empty($github_url) || empty($github_user)){
+		return false;
+	}
+	if (!$url) {
+		$url = $github_url."repos/".$github_user."/".$package->slug."/releases";
+	}
+	if (empty($url)) {
+		return false;
+	}
+	woodmanager_trace("Fetch Github on {$url}");
+	$wp_remote = wp_remote_get($url, array(
+			/**
+			 * NOTE
+			* - since 02/2020 github doesn't support authentication parameters as query_string
+			* - we must use 'Authorization' header parameter with clientid:clientsecret
+			* - more information : https://developer.github.com/changes/2020-02-10-deprecating-auth-through-query-param/
+			*/
+			'headers' => array(
+					'Authorization' => 'Basic ' . base64_encode($github_clientid.':'.$github_clientsecret)
+			),
+			'sslverify' => false
+	));
+	if (is_wp_error($wp_remote)) {
+		return false;
+	} else {
+		$releases = array();
+		$wp_remote_body = wp_remote_retrieve_body($wp_remote);
+		if (!empty($wp_remote_body)) {
+			$fetched_releases = @json_decode($wp_remote_body, true);
+			if (!empty($fetched_releases)) {
+				$releases = array_merge($releases, $fetched_releases);
+			}
+		}
+		// if github set header Link - we have to follow this pagination
+		$header_links = woodmanager_parse_http2_headerLinks(wp_remote_retrieve_header($wp_remote, 'Link'));
+		if (!empty($header_links)) {
+			foreach ($header_links as $header_link) {
+				if ($header_link['rel'] === 'next') {
+					$link_releases = woodmanager_fetch_github_releases($package, $header_link['url']);
+					if ($link_releases) {
+						$releases = array_merge($releases, $link_releases);
 					}
 				}
 			}
 		}
 	}
+	return $releases;
+}
+
+function woodmanager_parse_http2_headerLinks ($header_links) {
+	$res = array();
+	if (!empty($header_links)) {
+		$header_links = explode(",", $header_links);
+		foreach ($header_links as $header_link) {
+			preg_match('/<(.*?)>; rel="(.*?)"/', trim($header_link), $matches);
+			if (count($matches) > 2) {
+				$res[] = array('url' => $matches[1], 'rel' => $matches[2]);
+			}
+		}
+	}
+	return $res;
 }
 
 if (!function_exists("woodmanager_get_package_latest_release")):
@@ -520,8 +561,10 @@ function woodmanager_download_package($package_slug, $ball_url, $ext, $version, 
 				'method' => 		'GET',
 				'user_agent' => 	$_SERVER['HTTP_USER_AGENT'],
 		));
+		woodmanager_trace("download github releases - {$ext} at {$ball_url}...");
 		$context  = stream_context_create($options);
 		file_put_contents($final_path, file_get_contents($ball_url, false, $context));
+		woodmanager_trace("...downloaded");
 	}
 	return array('path' => $final_path, 'url' => $final_url);
 }
