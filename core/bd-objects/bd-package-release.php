@@ -33,6 +33,27 @@ if(!class_exists('BD_Package_Release')){
 
 		}
 		
+		/**
+		 * Check if specified version respects x.x.x format (where x is numeric)
+		 * @param unknown $version
+		 * @return boolean
+		 */
+		public static function is_valid_version_format($version) {
+			if (!empty($version)) {
+				$parts = explode(".", $version);
+				if (!empty($parts) && count($parts) === 3) {
+					$all_are_numeric = true;
+					foreach ($parts as $part) {
+						if (!is_numeric($part)) {
+							$all_are_numeric = false;
+						}
+					}
+					return $all_are_numeric;
+				}
+			}
+			return false;
+		}
+		
 		public static function version_exists($package, $version) {
 			global $wpdb;
 			if (is_object($package)){

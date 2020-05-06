@@ -147,7 +147,7 @@ function woodmanager_trace($log){
 	return false;
 }
 
-function woodmanager_get_package_websites_for_host($package, $host, $include_scope_depends_on = true, $processed_package_ids = array()) {
+function woodmanager_get_package_websites($package, $host, $key = null, $include_scope_depends_on = true, $processed_package_ids = array()) {
 	global $wpdb;
 	$res = array();
 	if (!is_object($package)) {
@@ -160,15 +160,19 @@ function woodmanager_get_package_websites_for_host($package, $host, $include_sco
 	if (is_object($package) && !empty($host) && !in_array($package->id, $processed_package_ids)) {
 		$host = rtrim($host, '/'); // important : trim last slash
 		$host = str_replace("https://", "", str_replace("http://", "", $host)); // whatever protocole
-		$res = BD_Package_Website::get_package_websites("id_package = ".$package->id." AND (host like '".$wpdb->esc_like("http://".$host)."' OR host like '".$wpdb->esc_like("https://".$host)."')");
+		$sql_query = "id_package = ".$package->id." AND (host like '".$wpdb->esc_like("http://".$host)."' OR host like '".$wpdb->esc_like("https://".$host)."')";
+		if ($key !== null) {
+			$sql_query .= " AND key_activation like '".$wpdb->esc_like($key)."'";
+		}
+		$res = BD_Package_Website::get_package_websites($sql_query);
 		$processed_package_ids[] = $package->id;
 		// include websites from package dependencies
 		if ($include_scope_depends_on && BD_Package::is_scope_dependency($package)) {
-			$websites_dependency = woodmanager_get_package_websites_for_host($package->scope, $host, $include_scope_depends_on, $processed_package_ids);
+			$websites_dependency = woodmanager_get_package_websites($package->scope, $host, $key, $include_scope_depends_on, $processed_package_ids);
 			$res = array_merge($res, $websites_dependency);
 		}
 	}
-	woodmanager_trace("woodmanager_get_package_websites_for_host({$host}) : " . var_export($res, true));
+	woodmanager_trace("woodmanager_get_package_websites({$host}, {$key}) : " . var_export($res, true));
 	return $res;
 }
 
@@ -181,21 +185,14 @@ function woodmanager_is_package_prerelease_enabled($package, $host, $key = null)
 		}
 	}
 	if (is_object($package) && !empty($host)){
-		$websites = woodmanager_get_package_websites_for_host($package, $host);
+		$websites = woodmanager_get_package_websites($package, $host, $key);
 		if (!empty($websites)) {
 			$is_prerelease_enabled = false;
 			// check if at least one of websites has prerelease === 'true'
 			foreach ($websites as $website) {
 				if (!empty($website->prerelease) && $website->prerelease === 'true') {
-					if ($key !== null) { // check for key activation
-						if (!empty($website->key_activation) && $website->key_activation === $key) {
-							$is_prerelease_enabled = true;
-							break;
-						}
-					} else {
-						$is_prerelease_enabled = true;
-						break;
-					}
+					$is_prerelease_enabled = true;
+					break;
 				}
 			}
 			return $is_prerelease_enabled;
@@ -209,7 +206,7 @@ if (!function_exists("woodmanager_is_active_package")):
  * test if package is activated
 * @return boolean
 */
-function woodmanager_is_active_package($package = '', $host = '', $key = '') {
+function woodmanager_is_active_package($package, $host = null, $key = null) {
 	if (!is_object($package)) {
 		if (is_numeric($package)) {
 			$package = BD_Package::get_package($package);
@@ -220,18 +217,10 @@ function woodmanager_is_active_package($package = '', $host = '', $key = '') {
 	if (is_object($package)) {
 		if (BD_Package::is_scope_public($package)){
 			return true;
-		}else if (!empty($host) && !empty($key)){
-			$websites = woodmanager_get_package_websites_for_host($package, $host);
+		}else if ($host !== null && $key !== null){
+			$websites = woodmanager_get_package_websites($package, $host, $key);
 			if (!empty($websites)) {
-				$is_active = false;
-				// check if at least one of websites has key_activation === key
-				foreach ($websites as $website) {
-					if (!empty($website->key_activation) && $website->key_activation === $key) {
-						$is_active = true;
-						break;
-					}
-				}
-				return $is_active;
+				return true;
 			}
 		}
 	}
@@ -369,38 +358,43 @@ function woodmanager_update_package_releases($package, $force_fetch = false) {
 						if (!isset($github_release['tag_name'])) {
 							woodmanager_trace_error("La release Github n'a pas de 'tag_name' - elle ne peut être traitée - package {$package->slug}");
 						} else {
-							if (!BD_Package_Release::version_exists($package, $github_release['tag_name'])) {
-									
-								/** release public info (available via API) */
-								$info = array(
-										'tag_name' => $github_release['tag_name'],
-										'published_at' => $github_release['published_at'],
-										'body' => $github_release['body'],
-										'prerelease' => $github_release['prerelease'],
-										'zipball_url' => '',
-										'tarball_url' => '',
-								);
-									
-								/** donwload zip and tar.gz */
-								if (isset($github_release['zipball_url'])){
-									$ball = woodmanager_download_package($package->slug, $github_release['zipball_url'], '.zip', $info['tag_name'], $github_release['prerelease'] === true);
-									$info['zipball_url'] = $ball['url'];
-								}
-								/* if (isset($github_release['tarball_url'])){ // not used
-									$ball = woodmanager_download_package($package->slug, $github_release['tarball_url'], '.tar.gz', $info['tag_name'], $github_release['prerelease'] === true);
-									$info['tarball_url'] = $ball['url'];
-								} */
-						
-								/** create release in our DB */
-								BD_Package_Release::create_package_release(array(
-										"id_package" => $package->id,
-										"version" => $github_release['tag_name'],
-										"type" => isset($github_release['prerelease']) && $github_release['prerelease'] === true ? 'prerelease' : 'release',
-										"info" => @json_encode($info),
-										"info_repository" => @json_encode($github_release),
-								));
+							/** Woodmanager supports only version format like x.x.x - see more on woodmanager_get_package_latest_release() function */
+							if (!BD_Package_Release::is_valid_version_format($github_release['tag_name'])){
+								woodmanager_trace_error("La release Github a un 'tag_name' d'un mauvais format (format attendu x.x.x où x est un nombre) - elle ne peut être traitée - package {$package->slug} tag_name {$github_release['tag_name']}");
 							} else {
-								// it's not necessary to update existing releases
+								if (!BD_Package_Release::version_exists($package, $github_release['tag_name'])) {
+										
+									/** release public info (available via API) */
+									$info = array(
+											'tag_name' => $github_release['tag_name'],
+											'published_at' => $github_release['published_at'],
+											'body' => $github_release['body'],
+											'prerelease' => $github_release['prerelease'],
+											'zipball_url' => '',
+											'tarball_url' => '',
+									);
+										
+									/** donwload zip and tar.gz */
+									if (isset($github_release['zipball_url'])){
+										$ball = woodmanager_download_package($package->slug, $github_release['zipball_url'], '.zip', $info['tag_name'], $github_release['prerelease'] === true);
+										$info['zipball_url'] = $ball['url'];
+									}
+									/* if (isset($github_release['tarball_url'])){ // not used
+										$ball = woodmanager_download_package($package->slug, $github_release['tarball_url'], '.tar.gz', $info['tag_name'], $github_release['prerelease'] === true);
+										$info['tarball_url'] = $ball['url'];
+									} */
+							
+									/** create release in our DB */
+									BD_Package_Release::create_package_release(array(
+											"id_package" => $package->id,
+											"version" => $github_release['tag_name'],
+											"type" => isset($github_release['prerelease']) && $github_release['prerelease'] === true ? 'prerelease' : 'release',
+											"info" => @json_encode($info),
+											"info_repository" => @json_encode($github_release),
+									));
+								} else {
+									// it's not necessary to update existing releases
+								}
 							}
 						}
 					}
@@ -499,6 +493,14 @@ if (!function_exists("woodmanager_get_package_latest_release")):
 * @param string $format : ARRAY_A | OBJECT
 * @return Ambigous <array, stdClass>
 */
+
+/**
+ * Retrieve release if available
+ * @param unknown $package_slug
+ * @param unknown $package_version format 'x.x.x' where x is numeric
+ * @param string $include_prerelease
+ * @return string|unknown
+ */
 function woodmanager_get_package_latest_release($package_slug, $package_version, $include_prerelease = false){
 
 	$package = BD_Package::get_package_by_slug($package_slug);
@@ -506,6 +508,15 @@ function woodmanager_get_package_latest_release($package_slug, $package_version,
 		// EXIT
 		return json_encode(array("error" => __("No package found for slug '{$package->slug}'")));
 	}
+	
+	/**
+	 * IMPORTANT : le numero de version des releases de packages doivent au format x.x.x où x est numérique
+	 */
+	if (!BD_Package_Release::is_valid_version_format($package_version)) {
+		// EXIT
+		return json_encode(array("error" => __("Package version '{$package_version}' format is invalid - '{$package->slug}'")));
+	}
+	
 	// Fetch Github API to retrieve releases and update our DB (if necessary)
 	woodmanager_update_package_releases($package);
 	

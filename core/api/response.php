@@ -45,8 +45,6 @@ class WoodAPIResponse {
 	}
 	
 	private static function _active() {
-		status_header(200);
-		header('Content-Type: application/json;charset=utf-8');
 		$host = '';
 		if (isset($_GET['api-key-host']) && !empty($_GET['api-key-host'])){
 			$host = urldecode($_GET['api-key-host']);
@@ -71,12 +69,12 @@ class WoodAPIResponse {
 		}else if (isset($_GET['key']) && !empty($_GET['key'])) {
 			$key = urldecode($_GET['key']);
 		}
+		status_header(200);
+		header('Content-Type: application/json;charset=utf-8');
 		return json_encode(array("active" => woodmanager_is_active_package($package, $host, $key)));
 	}
 	
 	private static function _install() {
-		status_header(200);
-		header('Content-Type: application/json;charset=utf-8');
 		$data = array();
 		$host = '';
 		if (isset($_GET['api-host']) && !empty($_GET['api-host'])) {
@@ -101,12 +99,12 @@ class WoodAPIResponse {
 		} else {
 			$data['install'] = false;
 		}
+		status_header(200);
+		header('Content-Type: application/json;charset=utf-8');
 		return json_encode($data);
 	}
 	
 	private static function _latestrelease() {
-		status_header(200);
-		header('Content-Type: application/json;charset=utf-8');
 		$data = array();
 		$package = '';
 		if (isset($_GET['api-package']) && !empty($_GET['api-package'])){
@@ -166,12 +164,12 @@ class WoodAPIResponse {
 		}else{
 			$data = json_encode(array("error" => "'".$package."' ".__("package isn't active or doesn't exist", WOODMANAGER_PLUGIN_TEXT_DOMAIN)));
 		}
+		status_header(200);
+		header('Content-Type: application/json;charset=utf-8');
 		return $data;
 	}
 	
 	private static function _update() {
-		status_header(200);
-		header('Content-Type: application/json;charset=utf-8');
 		$data = array();
 		$host = '';
 		if (isset($_GET['api-host']) && !empty($_GET['api-host'])) {
@@ -196,6 +194,8 @@ class WoodAPIResponse {
 		} else {
 			$data['install'] = false;
 		}
+		status_header(200);
+		header('Content-Type: application/json;charset=utf-8');
 		return json_encode($data);
 	}
 	
