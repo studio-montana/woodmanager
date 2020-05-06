@@ -28,11 +28,56 @@ defined('ABSPATH') or die("Go Away!");
 if(!class_exists('BD_Package')){
 
 	class BD_Package{
+		
+		public static $scope_public = "__public";
+		public static $scope_private = "__private";
 
 		public function __construct(){
 
 		}
 
+		/**
+		 * Check if package's scope is public (including dependencies)
+		 * @param unknown $package
+		 * @return boolean
+		 */
+		public static function is_scope_public($package, $processed_package_ids = array()) {
+			if (!is_object($package)) {
+				if (is_numeric($package)) {
+					$package = self::get_package($package);
+				} else {
+					$package = self::get_package_by_slug($package);
+				}
+			}
+			if (is_object($package) && !in_array($package->id, $processed_package_ids)) {
+				$processed_package_ids[] = $package->id;
+				if ($package->scope === self::$scope_public) {
+					return true;
+				} else if ($package->scope === self::$scope_private) {
+					return false;
+				} else if (!empty($package->scope)) {
+					return self::is_scope_public($package->scope, $processed_package_ids);
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * Check if package's scope is a denpendency
+		 * @param unknown $package
+		 * @return boolean
+		 */
+		public static function is_scope_dependency($package) {
+			if (!is_object($package)) {
+				if (is_numeric($package)) {
+					$package = BD_Package::get_package($package);
+				} else {
+					$package = BD_Package::get_package_by_slug($package);
+				}
+			}
+			return is_object($package) && !empty($package->scope) && $package->scope !== BD_Package::$scope_private && $package->scope !== BD_Package::$scope_public;
+		}
+		
 		public static function get_package($id){
 			global $wpdb;
 			if ($id){

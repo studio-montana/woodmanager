@@ -54,7 +54,7 @@ if (!$can_update){
 		}
 	}
 	if ($has_package){
-		$date = $bd_package->last_update;
+		$date = $bd_package->last_repository_fetch;
 		$date_s = '';
 		if (!empty($date)){
 			$date = new DateTime($date);

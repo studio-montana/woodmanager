@@ -58,11 +58,16 @@ class WoodManager_BD{
 			
 			self::create_table_package_release();
 
-			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` CHANGE `package_release_date` `last_update` datetime;");
-			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` ADD COLUMN `separate_major_releases` varchar(20) NULL AFTER `last_update`;");
+			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` CHANGE `package_release_date` `last_repository_fetch` datetime;");
+			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` CHANGE `free` `scope` varchar(255);");
+			$wpdb->query("UPDATE `".self::get_package_table_name($wpdb)."` SET `scope` = '".BD_Package::$scope_public."' WHERE `scope` LIKE 'true';");
+			$wpdb->query("UPDATE `".self::get_package_table_name($wpdb)."` SET `scope` = '".BD_Package::$scope_private."' WHERE `scope` LIKE 'false';");
+			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` ADD COLUMN `separate_major_releases` varchar(20) NULL AFTER `scope`;");
 			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` DROP `package_release`;");
 			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` DROP `package_release_github`;");
-			$wpdb->query("ALTER TABLE `".self::get_package_table_name($wpdb)."` DROP `package_release_date`;");
+			// rename package_key to package_website
+			$wpdb->query("ALTER TABLE `".self::get_package_key_table_name($wpdb)."` ADD COLUMN `prerelease` varchar(20) NULL AFTER `host`;");
+			$wpdb->query("ALTER TABLE `".self::get_package_key_table_name($wpdb)."` RENAME TO `".self::get_package_website_table_name($wpdb)."`;");
 			
 			update_option("woodmanager_db_version", $version_upgrade);
 		}
@@ -89,8 +94,12 @@ class WoodManager_BD{
 		return $wpdb->prefix . WOODMANAGER_PLUGIN_NAME."_package_profile";
 	}
 
-	public static function get_package_key_table_name($wpdb){
+	public static function get_package_key_table_name($wpdb){ // db v.1.1 => renamed to _package_website
 		return $wpdb->prefix . WOODMANAGER_PLUGIN_NAME."_package_key";
+	}
+
+	public static function get_package_website_table_name($wpdb){  // db v.1.1 => _package_key new name
+		return $wpdb->prefix . WOODMANAGER_PLUGIN_NAME."_package_website";
 	}
 
 	public static function get_package_release_table_name($wpdb){
@@ -285,65 +294,5 @@ class WoodManager_BD{
 
 		// table creation
 		dbDelta($sql);
-	}
-
-	/**
-	 * drop woodmanager_package sql data table
-	 */
-	private static function drop_table_package(){
-		global $wpdb;
-		$table_name = self::get_package_table_name($wpdb);
-		$sql = "DROP TABLE ". $table_name;
-		$wpdb->query($sql);
-	}
-
-	/**
-	 * drop woodmanager_package_installation sql data table
-	 */
-	private static function drop_table_package_installation(){
-		global $wpdb;
-		$table_name = self::get_package_installation_table_name($wpdb);
-		$sql = "DROP TABLE ". $table_name;
-		$wpdb->query($sql);
-	}
-
-	/**
-	 * drop woodmanager_package_update sql data table
-	 */
-	private static function drop_table_package_update(){
-		global $wpdb;
-		$table_name = self::get_package_update_table_name($wpdb);
-		$sql = "DROP TABLE ". $table_name;
-		$wpdb->query($sql);
-	}
-
-	/**
-	 * drop woodmanager_package_profile sql data table
-	 */
-	private static function drop_table_package_profile(){
-		global $wpdb;
-		$table_name = self::get_package_profile_table_name($wpdb);
-		$sql = "DROP TABLE ". $table_name;
-		$wpdb->query($sql);
-	}
-
-	/**
-	 * drop woodmanager_package_key sql data table
-	 */
-	private static function drop_table_package_key(){
-		global $wpdb;
-		$table_name = self::get_package_key_table_name($wpdb);
-		$sql = "DROP TABLE ". $table_name;
-		$wpdb->query($sql);
-	}
-
-	/**
-	 * drop woodmanager_package_release sql data table
-	 */
-	private static function drop_table_package_release(){
-		global $wpdb;
-		$table_name = self::get_package_release_table_name($wpdb);
-		$sql = "DROP TABLE ". $table_name;
-		$wpdb->query($sql);
 	}
 }

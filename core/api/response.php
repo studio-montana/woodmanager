@@ -45,44 +45,56 @@ class WoodAPIResponse {
 	}
 	
 	private static function _active() {
+		status_header(200);
 		header('Content-Type: application/json;charset=utf-8');
-		$key_host = '';
+		$host = '';
 		if (isset($_GET['api-key-host']) && !empty($_GET['api-key-host'])){
-			$key_host = urldecode($_GET['api-key-host']);
+			$host = urldecode($_GET['api-key-host']);
 		}else if (isset($_GET['api-host']) && !empty($_GET['api-host'])){
-			$key_host = urldecode($_GET['api-host']);
+			$host = urldecode($_GET['api-host']);
+		}else if (isset($_GET['host']) && !empty($_GET['host'])){
+			$host = urldecode($_GET['host']);
 		}
 		
-		$key_package = '';
+		$package = '';
 		if (isset($_GET['api-key-package']) && !empty($_GET['api-key-package'])){
-			$key_package = urldecode($_GET['api-key-package']);
+			$package = urldecode($_GET['api-key-package']);
 		}else if (isset($_GET['api-package']) && !empty($_GET['api-package'])){
-			$key_package = urldecode($_GET['api-package']);
+			$package = urldecode($_GET['api-package']);
+		}else if (isset($_GET['package']) && !empty($_GET['package'])){
+			$package = urldecode($_GET['package']);
 		}
 		
 		$key = '';
 		if (isset($_GET['api-key']) && !empty($_GET['api-key'])) {
 			$key = urldecode($_GET['api-key']);
+		}else if (isset($_GET['key']) && !empty($_GET['key'])) {
+			$key = urldecode($_GET['key']);
 		}
-		
-		$data = array("active" => woodmanager_is_active_package($key_package, $key_host, $key));
-		return json_encode($data);
+		return json_encode(array("active" => woodmanager_is_active_package($package, $host, $key)));
 	}
 	
 	private static function _install() {
+		status_header(200);
 		header('Content-Type: application/json;charset=utf-8');
 		$data = array();
 		$host = '';
 		if (isset($_GET['api-host']) && !empty($_GET['api-host'])) {
 			$host = urldecode($_GET['api-host']);
+		}else if (isset($_GET['host']) && !empty($_GET['host'])){
+			$host = urldecode($_GET['host']);
 		}
 		$package = '';
 		if (isset($_GET['api-package']) && !empty($_GET['api-package'])) {
 			$package = urldecode($_GET['api-package']);
+		}else if (isset($_GET['package']) && !empty($_GET['package'])){
+			$package = urldecode($_GET['package']);
 		}
 		$version = '';
 		if (isset($_GET['api-version']) && !empty($_GET['api-version'])) {
 			$version = urldecode($_GET['api-version']);
+		}else if (isset($_GET['version']) && !empty($_GET['version'])){
+			$version = urldecode($_GET['version']);
 		}
 		if(woodmanager_package_install($package, $host, $version)) {
 			$data['install'] = true;
@@ -93,34 +105,37 @@ class WoodAPIResponse {
 	}
 	
 	private static function _latestrelease() {
+		status_header(200);
 		header('Content-Type: application/json;charset=utf-8');
 		$data = array();
 		$package = '';
 		if (isset($_GET['api-package']) && !empty($_GET['api-package'])){
 			$package = urldecode($_GET['api-package']);
+		}else if (isset($_GET['package']) && !empty($_GET['package'])){
+			$package = urldecode($_GET['package']);
 		}
-		$key_host = '';
+		$host = '';
 		if (isset($_GET['api-key-host']) && !empty($_GET['api-key-host'])){
-			$key_host = urldecode($_GET['api-key-host']);
+			$host = urldecode($_GET['api-key-host']);
 		}else if (isset($_GET['api-host']) && !empty($_GET['api-host'])){
-			$key_host = urldecode($_GET['api-host']);
-		}
-		$key_package = $package;
-		if (isset($_GET['api-key-package']) && !empty($_GET['api-key-package'])){
-			$key_package = urldecode($_GET['api-key-package']);
+			$host = urldecode($_GET['api-host']);
+		}else if (isset($_GET['host']) && !empty($_GET['host'])){
+			$host = urldecode($_GET['host']);
 		}
 		$key = '';
 		if (isset($_GET['api-key']) && !empty($_GET['api-key'])){
 			$key = urldecode($_GET['api-key']);
+		}else if (isset($_GET['key']) && !empty($_GET['key'])){
+			$key = urldecode($_GET['key']);
 		}
 		
 		/**
-		 * Depuis WoodManager v.2 (05/05/2020)
+		 * Depuis WoodManager v.1.2 (05/05/2020)
 		 * Le paramètre 'api-package-version' est souhaité
-		 * Ce paramètre permet de garder (si l'option 'separate-major-releases' du package en question est activé) les packages dans leur version majeur
+		 * Ce paramètre permet de garder (si l'option 'separate-major-releases' du package en question est activé) les packages dans leur version majeur.
 		 * Ainsi, lors d'un changement de version majeur d'un package, les anciens sites n'y passent pas automatiquement, cela nécessite une action manuelle
-		 * Cela est parfois nécessaire pour maintenir des anciennes version de WP avec une version de package adéquate
-		 * Exemple : admettons qu'il existe deux releases, une en version 1.0.15 et l'autre en version 2.0.20
+		 * Cela est parfois nécessaire pour maintenir des anciennes version de WP avec une version de package adéquate.
+		 * Exemple : admettons qu'il existe deux releases, une en version 1.0.15 et l'autre en version 2.0.20 et que cette option soit activé sur le package
 		 * 		- un site utilisant le package en version 1.0.3 passera en 1.0.15 (et pas en 2.0.20 car sa version majeur est 1)
 		 * 		- un site utilisant le package en version 2.0.7 passera en 2.0.20
 		 */
@@ -133,9 +148,9 @@ class WoodAPIResponse {
 			if ($package === 'woodkit') {
 				/**
 				 * Par default, pour Woodkit
-				 * Les anciens sites, utilisant Woodkit, qui n'envoient pas le paramètre 'api-package-version' sont en version majeur 1 (il n'existe pas de Woodkit v.0)
+				 * On admet que les packages Woodkit qui n'envoient pas le paramètre 'api-package-version' sont en version majeur 1 (il n'existe pas de Woodkit v.0 et la v.2 envoi ce paramètre)
 				 * En fixant ce paramètre par défault, on n'a pas à intervenir manuellement sur tous les Woodkit installés pour ajouter le paramètre 'api-package-version' à l'appel de l'API et c'est tant mieux !
-				 * NOTE : ce package sépare les versions majeurs, c'est pourquoi on ne peut pas mettre $package_version = '0.0.0';
+				 * NOTE : ce package sépare les versions majeurs, c'est pourquoi on ne peut pas mettre $package_version = '0.0.0' - ainsi les woodkit en v.1 restent en v.1, ils ne passent pas en v.2 sans action manuelle
 				 */
 				$package_version = '1.0.0';
 			} else {
@@ -146,28 +161,35 @@ class WoodAPIResponse {
 			}
 		}
 		
-		if (woodmanager_is_active_package($key_package, $key_host, $key)){
-			$data = woodmanager_get_package_latest_release($package, $package_version);
+		if (woodmanager_is_active_package($package, $host, $key)){
+			$data = woodmanager_get_package_latest_release($package, $package_version, woodmanager_is_package_prerelease_enabled($package, $host, $key));
 		}else{
-			$data = json_encode(array("error" => "'".$package."' ".__("isn't active or doesn't exist", WOODMANAGER_PLUGIN_TEXT_DOMAIN)));
+			$data = json_encode(array("error" => "'".$package."' ".__("package isn't active or doesn't exist", WOODMANAGER_PLUGIN_TEXT_DOMAIN)));
 		}
 		return $data;
 	}
 	
 	private static function _update() {
+		status_header(200);
 		header('Content-Type: application/json;charset=utf-8');
 		$data = array();
 		$host = '';
 		if (isset($_GET['api-host']) && !empty($_GET['api-host'])) {
 			$host = urldecode($_GET['api-host']);
+		}else if (isset($_GET['host']) && !empty($_GET['host'])) {
+			$host = urldecode($_GET['host']);
 		}
 		$package = '';
 		if (isset($_GET['api-package']) && !empty($_GET['api-package'])) {
 			$package = urldecode($_GET['api-package']);
+		}else if (isset($_GET['package']) && !empty($_GET['package'])) {
+			$package = urldecode($_GET['package']);
 		}
 		$version = '';
 		if (isset($_GET['api-version']) && !empty($_GET['api-version'])) {
 			$version = urldecode($_GET['api-version']);
+		}else if (isset($_GET['version']) && !empty($_GET['version'])) {
+			$version = urldecode($_GET['version']);
 		}
 		if(woodmanager_package_update($package, $host, $version)) {
 			$data['install'] = true;

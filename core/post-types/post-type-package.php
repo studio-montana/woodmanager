@@ -26,7 +26,7 @@ define('WOODMANAGER_PACKAGE_PROPERTIES_NONCE_ACTION', 'WOODMANAGER_PACKAGE_PROPE
 define('WOODMANAGER_PACKAGE_RELEASES_NONCE_ACTION', 'WOODMANAGER_PACKAGE_RELEASES_NONCE_ACTION');
 define('WOODMANAGER_PACKAGE_INSTALLATIONS_NONCE_ACTION', 'WOODMANAGER_PACKAGE_INSTALLATIONS_NONCE_ACTION');
 define('WOODMANAGER_PACKAGE_UPDATES_NONCE_ACTION', 'WOODMANAGER_PACKAGE_UPDATES_NONCE_ACTION');
-define('WOODMANAGER_PACKAGE_KEYS_NONCE_ACTION', 'WOODMANAGER_PACKAGE_KEYS_NONCE_ACTION');
+define('WOODMANAGER_PACKAGE_WEBSITES_NONCE_ACTION', 'WOODMANAGER_PACKAGE_WEBSITES_NONCE_ACTION');
 
 function woodmanager_add_package_post_type(){
 
@@ -61,7 +61,7 @@ add_action( 'init', 'woodmanager_add_package_post_type' );
 
 function woodmanager_package_admin_init() {
 	add_meta_box('woodmanager-package-properties', __( 'Package properties', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_properties', 'package', 'normal', 'high');
-	add_meta_box('woodmanager-package-keys', __( 'Package keys', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_keys', 'package', 'normal', 'high');
+	add_meta_box('woodmanager-package-websites', __( 'Package websites', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_websites', 'package', 'normal', 'high');
 	add_meta_box('woodmanager-package-installations', __( 'Package installations', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_installations', 'package', 'normal', 'high');
 	add_meta_box('woodmanager-package-updates', __( 'Package updates', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_updates', 'package', 'normal', 'high');
 	add_meta_box('woodmanager-package-releases', __( 'Package releases', WOODMANAGER_PLUGIN_TEXT_DOMAIN), 'woodmanager_package_boxe_releases', 'package', 'normal', 'high');
@@ -72,8 +72,8 @@ function woodmanager_package_boxe_properties($post) {
 	include (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_POST_TYPES.'templates/template-post-type-package-properties.php');
 }
 
-function woodmanager_package_boxe_keys($post) {
-	include (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_POST_TYPES.'templates/template-post-type-package-keys.php');
+function woodmanager_package_boxe_websites($post) {
+	include (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_POST_TYPES.'templates/template-post-type-package-websites.php');
 }
 
 function woodmanager_package_boxe_installations($post) {
@@ -127,9 +127,9 @@ function woodmanager_package_save_post($post_id){
 
 			$id_bd_package = null;
 			$data = array();
-			$data['free'] = 'false';
-			if (isset($_POST['meta_package_free']) && !empty($_POST['meta_package_free']) && $_POST['meta_package_free'] == 'on') {
-				$data['free'] = 'true';
+			$data['scope'] = BD_Package::$scope_public;
+			if (isset($_POST['meta_package_scope']) && !empty($_POST['meta_package_scope'])) {
+				$data['scope'] = $_POST['meta_package_scope'];
 			}
 			$data['separate_major_releases'] = 'false';
 			if (isset($_POST['meta_package_separate_major_releases']) && !empty($_POST['meta_package_separate_major_releases']) && $_POST['meta_package_separate_major_releases'] == 'on') {
@@ -145,48 +145,55 @@ function woodmanager_package_save_post($post_id){
 				// no package found : create
 				$data['slug'] = $meta_package_slug;
 				$res = BD_Package::create_package($data);
-				if (isset($res['id']))
+				if (isset($res['id'])) {
 					$id_bd_package = $res['id'];
+				}
 			}
 
 			// KEYS
 			if (!empty($id_bd_package)){
-				if (isset($_POST[WOODMANAGER_PACKAGE_KEYS_NONCE_ACTION]) && wp_verify_nonce($_POST[WOODMANAGER_PACKAGE_KEYS_NONCE_ACTION], WOODMANAGER_PACKAGE_KEYS_NONCE_ACTION)){
-					$existing_keys = BD_package_key::get_package_keys("id_package = ".$id_bd_package);
-					$updated_key_ids = array();
+				if (isset($_POST[WOODMANAGER_PACKAGE_WEBSITES_NONCE_ACTION]) && wp_verify_nonce($_POST[WOODMANAGER_PACKAGE_WEBSITES_NONCE_ACTION], WOODMANAGER_PACKAGE_WEBSITES_NONCE_ACTION)){
+					$existing_websites = BD_Package_Website::get_package_websites("id_package = ".$id_bd_package);
+					$updated_website_ids = array();
 					foreach ($_POST as $k => $v){
-						if (woodmanager_starts_with($k, "package-key-item-id-")){
-							$key_item_id = $v;
-							$key = array();
-							if (isset($_POST['package-key-item-bd-id-'.$key_item_id]) && !empty($_POST['package-key-item-bd-id-'.$key_item_id]))
-								$key["id"] = $_POST['package-key-item-bd-id-'.$key_item_id];
-							if (isset($_POST['package-key-host-'.$key_item_id]) && !empty($_POST['package-key-host-'.$key_item_id]))
-								$key["host"] = $_POST['package-key-host-'.$key_item_id];
-							if (isset($_POST['package-key-activation-'.$key_item_id]) && !empty($_POST['package-key-activation-'.$key_item_id]))
-								$key["activation"] = $_POST['package-key-activation-'.$key_item_id];
-							if (isset($_POST['package-key-user-'.$key_item_id]) && !empty($_POST['package-key-user-'.$key_item_id]))
-								$key["user"] = $_POST['package-key-user-'.$key_item_id];
+						if (woodmanager_starts_with($k, "package-website-item-id-")){
+							$website_item_id = $v;
+							$website = array( // defaults
+									'key_activation' => '',
+									'user' => null,
+									'prerelease' => 'false'
+							);
+							if (isset($_POST['package-website-item-bd-id-'.$website_item_id]) && !empty($_POST['package-website-item-bd-id-'.$website_item_id]))
+								$website["id"] = $_POST['package-website-item-bd-id-'.$website_item_id];
+							if (isset($_POST['package-website-host-'.$website_item_id]) && !empty($_POST['package-website-host-'.$website_item_id]))
+								$website["host"] = $_POST['package-website-host-'.$website_item_id];
+							if (isset($_POST['package-website-activation-'.$website_item_id]) && !empty($_POST['package-website-activation-'.$website_item_id]))
+								$website["key_activation"] = $_POST['package-website-activation-'.$website_item_id];
+							if (isset($_POST['package-website-user-'.$website_item_id]) && !empty($_POST['package-website-user-'.$website_item_id]))
+								$website["user"] = $_POST['package-website-user-'.$website_item_id];
+							if (isset($_POST['package-website-prerelease-'.$website_item_id]) && !empty($_POST['package-website-prerelease-'.$website_item_id]) && $_POST['package-website-prerelease-'.$website_item_id] == 'on')
+								$website["prerelease"] = 'true';
 
-							if (isset($key["host"]) && !empty($key["host"]) && isset($key["activation"]) && !empty($key["activation"]) && isset($key["user"]) && !empty($key["user"])){
+							if (isset($website["host"]) && !empty($website["host"])){
 								
-								$key['host'] = rtrim($key['host'], '/');// important : trim last slash
+								$website['host'] = rtrim($website['host'], '/');// important : trim last slash
 								
-								if (isset($key["id"]) && !empty($key["id"])){
+								if (isset($website["id"]) && !empty($website["id"])){
 									// update
-									$res = BD_Package_Key::update_package_key($key["id"], array("id_package" => $id_bd_package, "id_user" => $key["user"], "host" => $key["host"], "key_activation" => $key["activation"]));
+									$res = BD_Package_Website::update_package_website($website["id"], array("id_package" => $id_bd_package, "id_user" => $website["user"], "host" => $website["host"], "key_activation" => $website["key_activation"], "prerelease" => $website['prerelease']));
 									if (!isset($res['error']))
-										$updated_key_ids[] = intval($key["id"]);
+										$updated_website_ids[] = intval($website["id"]);
 								}else{
 									// create
-									$res = BD_Package_Key::create_package_key(array("id_package" => $id_bd_package, "id_user" => $key["user"], "host" => $key["host"], "key_activation" => $key["activation"]));
+									$res = BD_Package_Website::create_package_website(array("id_package" => $id_bd_package, "id_user" => $website["user"], "host" => $website["host"], "key_activation" => $website["key_activation"], "prerelease" => $website['prerelease']));
 								}
 							}
 						}
 					}
-					// clean deleted key
-					foreach ($existing_keys as $existing_key){
-						if (!in_array($existing_key->id, $updated_key_ids)) {
-							BD_Package_Key::delete_package_key($existing_key->id);
+					// clean deleted website
+					foreach ($existing_websites as $existing_website){
+						if (!in_array($existing_website->id, $updated_website_ids)) {
+							BD_Package_Website::delete_package_website($existing_website->id);
 						}
 					}
 				}

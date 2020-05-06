@@ -3,7 +3,7 @@
 /**
  * Plugin Name: WoodManager
  * Description: Manage your wooden packages easily
- * Version: 1.0.4
+ * Version: 2.0.0
  * Author: Studio Montana
  * Author URI: http://www.studio-montana.com/
  * License: GPL2
@@ -86,7 +86,8 @@ if(!class_exists('WoodManager')){
 			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package.php');
 			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-installation.php');
 			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-profile.php');
-			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-key.php');
+			// require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-key.php'); package_key table is renamed in package_website
+			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-website.php');
 			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-update.php');
 			require_once (WOODMANAGER_PLUGIN_PATH.'/'.WOODMANAGER_PLUGIN_BD_OBJECTS_FOLDER.'bd-package-release.php');
 			

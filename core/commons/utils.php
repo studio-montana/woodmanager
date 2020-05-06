@@ -147,28 +147,91 @@ function woodmanager_trace($log){
 	return false;
 }
 
+function woodmanager_get_package_websites_for_host($package, $host, $include_scope_depends_on = true, $processed_package_ids = array()) {
+	global $wpdb;
+	$res = array();
+	if (!is_object($package)) {
+		if (is_numeric($package)) {
+			$package = BD_Package::get_package($package);
+		} else {
+			$package = BD_Package::get_package_by_slug($package);
+		}
+	}
+	if (is_object($package) && !empty($host) && !in_array($package->id, $processed_package_ids)) {
+		$host = rtrim($host, '/'); // important : trim last slash
+		$host = str_replace("https://", "", str_replace("http://", "", $host)); // whatever protocole
+		$res = BD_Package_Website::get_package_websites("id_package = ".$package->id." AND (host like '".$wpdb->esc_like("http://".$host)."' OR host like '".$wpdb->esc_like("https://".$host)."')");
+		$processed_package_ids[] = $package->id;
+		// include websites from package dependencies
+		if ($include_scope_depends_on && BD_Package::is_scope_dependency($package)) {
+			$websites_dependency = woodmanager_get_package_websites_for_host($package->scope, $host, $include_scope_depends_on, $processed_package_ids);
+			$res = array_merge($res, $websites_dependency);
+		}
+	}
+	woodmanager_trace("woodmanager_get_package_websites_for_host({$host}) : " . var_export($res, true));
+	return $res;
+}
+
+function woodmanager_is_package_prerelease_enabled($package, $host, $key = null) {
+	if (!is_object($package)) {
+		if (is_numeric($package)) {
+			$package = BD_Package::get_package($package);
+		} else {
+			$package = BD_Package::get_package_by_slug($package);
+		}
+	}
+	if (is_object($package) && !empty($host)){
+		$websites = woodmanager_get_package_websites_for_host($package, $host);
+		if (!empty($websites)) {
+			$is_prerelease_enabled = false;
+			// check if at least one of websites has prerelease === 'true'
+			foreach ($websites as $website) {
+				if (!empty($website->prerelease) && $website->prerelease === 'true') {
+					if ($key !== null) { // check for key activation
+						if (!empty($website->key_activation) && $website->key_activation === $key) {
+							$is_prerelease_enabled = true;
+							break;
+						}
+					} else {
+						$is_prerelease_enabled = true;
+						break;
+					}
+				}
+			}
+			return $is_prerelease_enabled;
+		}
+	}
+	return false;
+}
+
 if (!function_exists("woodmanager_is_active_package")):
 /**
  * test if package is activated
-* @param unknown $ressource_name
 * @return boolean
 */
-function woodmanager_is_active_package($package_slug = '', $host = '', $key = '') {
-	if (!empty($package_slug)){
-		$bd_package = BD_Package::get_package_by_slug($package_slug);
-		if (!empty($bd_package) && $bd_package->free == 'true'){
+function woodmanager_is_active_package($package = '', $host = '', $key = '') {
+	if (!is_object($package)) {
+		if (is_numeric($package)) {
+			$package = BD_Package::get_package($package);
+		} else {
+			$package = BD_Package::get_package_by_slug($package);
+		}
+	}
+	if (is_object($package)) {
+		if (BD_Package::is_scope_public($package)){
 			return true;
-		}else if (!empty($bd_package) && !empty($host) && !empty($key)){
-			global $wpdb;
-			$host = rtrim($host, '/'); // important : trim last slash
-			// $bd_keys = BD_Package_Key::get_package_keys("id_package = ".$bd_package->id." AND host like '".$wpdb->esc_like($host)."' AND key_activation like '".$wpdb->esc_like($key)."'");
-			
-			// @since 13/02/2017 - patch to validate https for a saved http host
-			$host = str_replace("http://", "", $host);
-			$host = str_replace("https://", "", $host);
-			$bd_keys = BD_Package_Key::get_package_keys("id_package = ".$bd_package->id." AND key_activation like '".$wpdb->esc_like($key)."' AND (host like '".$wpdb->esc_like("http://".$host)."' OR host like '".$wpdb->esc_like("https://".$host)."')");
-			if (!empty($bd_keys) && count($bd_keys) > 0){
-				return true;
+		}else if (!empty($host) && !empty($key)){
+			$websites = woodmanager_get_package_websites_for_host($package, $host);
+			if (!empty($websites)) {
+				$is_active = false;
+				// check if at least one of websites has key_activation === key
+				foreach ($websites as $website) {
+					if (!empty($website->key_activation) && $website->key_activation === $key) {
+						$is_active = true;
+						break;
+					}
+				}
+				return $is_active;
 			}
 		}
 	}
@@ -266,15 +329,15 @@ function woodmanager_update_package_releases($package, $force_fetch = false) {
 	if ($package){
 		$fetch_github = true;
 		$fetch_github_error = false;
-		$last_update = $package->last_update;
-		if (!empty($last_update) && !$force_fetch){
-			$last_update = new DateTime($last_update);
+		$last_repository_fetch = $package->last_repository_fetch;
+		if (!empty($last_repository_fetch) && !$force_fetch){
+			$last_repository_fetch = new DateTime($last_repository_fetch);
 			$github_update_interval = woodmanager_get_option('github-update-interval', 'PT1H');
 			if (!empty($github_update_interval)) {
-				$last_update->add(new DateInterval($github_update_interval));
+				$last_repository_fetch->add(new DateInterval($github_update_interval));
 			}
 			$now = new DateTime(current_time('mysql'));
-			if ($last_update > $now){
+			if ($last_repository_fetch > $now){
 				$fetch_github = false;
 			}
 		}
@@ -288,6 +351,7 @@ function woodmanager_update_package_releases($package, $force_fetch = false) {
 			$github_clientsecret = woodmanager_get_option('github-clientsecret');
 			if (!empty($github_url) && !empty($github_user)){
 				$url = $github_url."repos/".$github_user."/".$package->slug."/releases";
+				woodmanager_trace("Fetch Github on {$url}");
 				$wp_remote = wp_remote_get($url, array(
 						/**
 						 * NOTE
@@ -303,6 +367,11 @@ function woodmanager_update_package_releases($package, $force_fetch = false) {
 				if (is_wp_error($wp_remote)) {
 					$fetch_github_error = true;
 				} else {
+					/**
+					 * Update package's last_repository_fetch date
+					 */
+					BD_Package::update_package($package, array('last_repository_fetch' => current_time('mysql')));
+					
 					/**
 					 * Update package's releases in DB
 					 */
@@ -324,6 +393,8 @@ function woodmanager_update_package_releases($package, $force_fetch = false) {
 											'zipball_url' => '',
 											'tarball_url' => '',
 									);
+									
+									/** donwload zip and tar.gz */
 									if (isset($github_release['zipball_url'])){
 										$ball = woodmanager_download_package($package->slug, $github_release['zipball_url'], '.zip', $info['tag_name'], $github_release['prerelease'] === true);
 										$info['zipball_url'] = $ball['url'];
@@ -342,7 +413,7 @@ function woodmanager_update_package_releases($package, $force_fetch = false) {
 											"info_repository" => @json_encode($github_release),
 									));
 								} else {
-									// is it necessary to update all existing releases ?
+									// it's not necessary to update existing releases
 								}
 							}
 						}
@@ -360,14 +431,14 @@ if (!function_exists("woodmanager_get_package_latest_release")):
 * @param string $format : ARRAY_A | OBJECT
 * @return Ambigous <array, stdClass>
 */
-function woodmanager_get_package_latest_release($package_slug, $package_version){
+function woodmanager_get_package_latest_release($package_slug, $package_version, $include_prerelease = false){
 
 	$package = BD_Package::get_package_by_slug($package_slug);
 	if (!is_object($package)){
 		// EXIT
 		return json_encode(array("error" => __("No package found for slug '{$package->slug}'")));
 	}
-	// Fetch Github API to retrieve releases (if necessary) and update our DB
+	// Fetch Github API to retrieve releases and update our DB (if necessary)
 	woodmanager_update_package_releases($package);
 	
 	// Check if package has 'separate-major-releases' option activated
@@ -400,6 +471,10 @@ function woodmanager_get_package_latest_release($package_slug, $package_version)
 		// Maybe more than one release may be retrieved, it depends on client version
 		// So we keep the latest
 		foreach ($releases as $release) {
+			// exclude prerelease
+			if (!$include_prerelease && $release->type !== 'release') {
+				continue;
+			}
 			if (!is_object($latest_release)) {
 				$latest_release = $release;
 				continue;

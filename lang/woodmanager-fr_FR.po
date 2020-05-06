@@ -1,0 +1,1223 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WoodManager\n"
+"POT-Creation-Date: 2020-05-05 19:24+0200\n"
+"PO-Revision-Date: 2020-05-05 19:32+0200\n"
+"Last-Translator: Sébastien Chandonay <sebastien.chandonay@gmail.com>\n"
+"Language-Team: Sébastien Chandonay / Cyril Tissot <sebastien.chandonay@gmail."
+"com artcyril@gmail.com>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Projewoodmanager-Id-Version: Bancassurances Theme WP\n"
+"X-Generator: Poedit 2.3\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=2; plural=n>1;\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+#: ../core/api/response.php:152
+msgid "package isn't active or doesn't exist"
+msgstr "ce package n’est pas actif ou n’existe pas"
+
+#: ../core/bd-objects/bd-package-installation.php:64
+msgid "Cannot create package installation."
+msgstr "Impossible de créer l’installation du package"
+
+#: ../core/bd-objects/bd-package-key.php:64
+msgid "Cannot create package account key."
+msgstr "Impossible de créer la clé du package"
+
+#: ../core/bd-objects/bd-package-profile.php:64
+msgid "Cannot create package account profile."
+msgstr "Impossible de créer le profile du package"
+
+#: ../core/bd-objects/bd-package-release.php:83
+msgid "Cannot create package release."
+msgstr "Impossible de créer la release du package"
+
+#: ../core/bd-objects/bd-package-update.php:64
+msgid "Cannot create package update."
+msgstr "Impossible de créer la mise à jour du package"
+
+#: ../core/bd-objects/bd-package.php:77
+msgid "Cannot create package."
+msgstr "Impossible de créer le package"
+
+#: ../core/commons/config/config-options.php:65
+msgid "WoodManager settings"
+msgstr "Paramètres Woodmanager"
+
+#: ../core/commons/config/config-options.php:93
+msgid "Github"
+msgstr ""
+
+#: ../core/commons/config/config-options.php:100
+msgid "Github API url"
+msgstr ""
+
+#: ../core/commons/config/config-options.php:108
+msgid "Github user"
+msgstr ""
+
+#: ../core/commons/config/config-options.php:116
+msgid "Github client id"
+msgstr ""
+
+#: ../core/commons/config/config-options.php:124
+msgid "Github client secret"
+msgstr ""
+
+#: ../core/commons/config/config-options.php:132
+msgid "Github update interval"
+msgstr ""
+
+#: ../core/commons/config/config-options.php:167
+msgid "https://api.github.com/"
+msgstr ""
+
+#: ../core/commons/config/config.php:109
+msgid "Setup"
+msgstr "Réglages"
+
+#: ../core/post-types/post-type-package.php:34
+#: ../core/post-types/post-type-package.php:39
+msgid "Packages"
+msgstr "Packages"
+
+#: ../core/post-types/post-type-package.php:35
+msgid "Package"
+msgstr "Package"
+
+#: ../core/post-types/post-type-package.php:36
+msgid "Add package"
+msgstr "Ajouter un package"
+
+#: ../core/post-types/post-type-package.php:37
+msgid "Edit package"
+msgstr "Editer le package"
+
+#: ../core/post-types/post-type-package.php:38
+msgid "New package"
+msgstr "Nouveau package"
+
+#: ../core/post-types/post-type-package.php:40
+msgid "View packages"
+msgstr "Vois les packages"
+
+#: ../core/post-types/post-type-package.php:41
+msgid "Find packages"
+msgstr "Chercher des packages"
+
+#: ../core/post-types/post-type-package.php:42
+msgid "No package found"
+msgstr "Aucun package trouvé"
+
+#: ../core/post-types/post-type-package.php:43
+msgid "no package found in trash"
+msgstr "aucun package trouvé dans la corbeille"
+
+#: ../core/post-types/post-type-package.php:63
+msgid "Package properties"
+msgstr "Propriétés du package"
+
+#: ../core/post-types/post-type-package.php:64
+msgid "Package keys"
+msgstr "Clés du package"
+
+#: ../core/post-types/post-type-package.php:65
+msgid "Package installations"
+msgstr "Installations du package"
+
+#: ../core/post-types/post-type-package.php:66
+msgid "Package updates"
+msgstr "Mises à jour du package"
+
+#: ../core/post-types/post-type-package.php:67
+msgid "Package releases"
+msgstr "Releases du package"
+
+#: ../core/post-types/templates/template-post-type-package-installations.php:37
+msgid ""
+"You can not view package installations, please edit original item of this "
+"translation."
+msgstr ""
+"Vous ne pouvez pas voir les installations de ce packages, veuillez éditer "
+"l’élément original de cette traduction."
+
+#: ../core/post-types/templates/template-post-type-package-installations.php:40
+#: ../core/post-types/templates/template-post-type-package-keys.php:40
+#: ../core/post-types/templates/template-post-type-package-properties.php:40
+#: ../core/post-types/templates/template-post-type-package-releases.php:42
+#: ../core/post-types/templates/template-post-type-package-updates.php:40
+msgid "Edit original item"
+msgstr "Editer l’original"
+
+#: ../core/post-types/templates/template-post-type-package-installations.php:58
+#: ../core/post-types/templates/template-post-type-package-updates.php:58
+msgid "date"
+msgstr "date"
+
+#: ../core/post-types/templates/template-post-type-package-installations.php:59
+#: ../core/post-types/templates/template-post-type-package-updates.php:59
+msgid "host"
+msgstr ""
+
+#: ../core/post-types/templates/template-post-type-package-installations.php:60
+#: ../core/post-types/templates/template-post-type-package-releases.php:73
+#: ../core/post-types/templates/template-post-type-package-updates.php:60
+msgid "version"
+msgstr "version"
+
+#: ../core/post-types/templates/template-post-type-package-installations.php:85
+msgid "no installation for this package"
+msgstr "aucune installation pour ce package"
+
+#: ../core/post-types/templates/template-post-type-package-installations.php:88
+#: ../core/post-types/templates/template-post-type-package-keys.php:121
+#: ../core/post-types/templates/template-post-type-package-updates.php:88
+msgid "no package"
+msgstr "aucun package"
+
+#: ../core/post-types/templates/template-post-type-package-keys.php:37
+msgid ""
+"You can not modify package keys, please edit original item of this "
+"translation."
+msgstr ""
+"Vous ne pouvez pas éditer les clés de ce packages, veuillez éditer l’élément "
+"original de cette traduction."
+
+#: ../core/post-types/templates/template-post-type-package-keys.php:72
+msgid "new key"
+msgstr "Nouvelle clé"
+
+#: ../core/post-types/templates/template-post-type-package-keys.php:94
+msgid "Add key"
+msgstr "Ajouter une clé"
+
+#: ../core/post-types/templates/template-post-type-package-properties.php:37
+msgid ""
+"You can not modify package properties, please edit original item of this "
+"translation."
+msgstr ""
+"Vous ne pouvez pas éditer les propriétés de ce packages, veuillez éditer "
+"l’élément original de cette traduction."
+
+#: ../core/post-types/templates/template-post-type-package-properties.php:47
+msgid "Package slug"
+msgstr "Slug du package"
+
+#: ../core/post-types/templates/template-post-type-package-properties.php:59
+msgid "Package free"
+msgstr "Package free"
+
+#: ../core/post-types/templates/template-post-type-package-properties.php:67
+msgid "Separate major releases"
+msgstr "Séparer les version majeurs"
+
+#: ../core/post-types/templates/template-post-type-package-releases.php:39
+msgid ""
+"You can not view package releases, please edit original item of this "
+"translation."
+msgstr ""
+"Vous ne pouvez pas voir les releases de ce packages, veuillez éditer "
+"l’élément original de cette traduction."
+
+#: ../core/post-types/templates/template-post-type-package-releases.php:64
+msgid "Last Github fetch"
+msgstr "Dernier appel Github"
+
+#: ../core/post-types/templates/template-post-type-package-releases.php:68
+msgid "no fetch"
+msgstr "aucun appel"
+
+#: ../core/post-types/templates/template-post-type-package-releases.php:74
+msgid "type"
+msgstr "type"
+
+#: ../core/post-types/templates/template-post-type-package-releases.php:90
+msgid "no release for this package"
+msgstr "Aucune release pour ce package"
+
+#: ../core/post-types/templates/template-post-type-package-updates.php:37
+msgid ""
+"You can not view package updates, please edit original item of this "
+"translation."
+msgstr ""
+"Vous ne pouvez pas voir les mises à jour de ce packages, veuillez éditer "
+"l’élément original de cette traduction"
+
+#: ../core/post-types/templates/template-post-type-package-updates.php:75
+msgid "no version"
+msgstr "aucune version"
+
+#: ../core/post-types/templates/template-post-type-package-updates.php:85
+msgid "no update for this package"
+msgstr "Aucune mise à jour pour ce package"
+
+#~ msgid "WoodManagerize"
+#~ msgstr "Personnaliser"
+
+#~ msgid "Copyright"
+#~ msgstr "Copyright"
+
+#~ msgid "Enable comments"
+#~ msgstr "Activer les commentaires"
+
+#~ msgid "Sticky"
+#~ msgstr "Autocollant"
+
+#~ msgid ", "
+#~ msgstr ", "
+
+#, php-format
+#~ msgid "View all posts by %s"
+#~ msgstr "Voir tous les articles de %s"
+
+#, php-format
+#~ msgid "Permalink to %s"
+#~ msgstr "Lien vers %s"
+
+#~ msgid "Invalid URL..."
+#~ msgstr "URL invalide"
+
+#~ msgid "Invalid Format..."
+#~ msgstr "Format invalide"
+
+#~ msgid "are supported"
+#~ msgstr "sont supportés"
+
+#~ msgid "january"
+#~ msgstr "janvier"
+
+#~ msgid "february"
+#~ msgstr "février"
+
+#~ msgid "march"
+#~ msgstr "mars"
+
+#~ msgid "april"
+#~ msgstr "avril"
+
+#~ msgid "may"
+#~ msgstr "mai"
+
+#~ msgid "june"
+#~ msgstr "juin"
+
+#~ msgid "july"
+#~ msgstr "juillet"
+
+#~ msgid "august"
+#~ msgstr "août"
+
+#~ msgid "september"
+#~ msgstr "septembre"
+
+#~ msgid "october"
+#~ msgstr "octobre"
+
+#~ msgid "november"
+#~ msgstr "novembre"
+
+#~ msgid "december"
+#~ msgstr "décembre"
+
+#~ msgid "jan"
+#~ msgstr "jan"
+
+#~ msgid "feb"
+#~ msgstr "fév"
+
+#, fuzzy
+#~ msgid "mar"
+#~ msgstr "mars"
+
+#~ msgid "apr"
+#~ msgstr "avr"
+
+#, fuzzy
+#~ msgid "jun"
+#~ msgstr "juin"
+
+#~ msgid "jul"
+#~ msgstr "juil"
+
+#, fuzzy
+#~ msgid "aug"
+#~ msgstr "août"
+
+#~ msgid "sept"
+#~ msgstr "sept"
+
+#~ msgid "oct"
+#~ msgstr "oct"
+
+#~ msgid "nov"
+#~ msgstr "nov"
+
+#~ msgid "dec"
+#~ msgstr "déc"
+
+#~ msgid "Done"
+#~ msgstr "Ok"
+
+#~ msgid "Order"
+#~ msgstr "Tri"
+
+#~ msgid "No entry"
+#~ msgstr "Aucune entrée"
+
+#~ msgid "Background Image"
+#~ msgstr "Image de fond"
+
+#~ msgid "BACKGROUNDIMAGE"
+#~ msgstr "Image de fond"
+
+#~ msgid "Choose image"
+#~ msgstr "Choisir une image"
+
+#~ msgid "Delete"
+#~ msgstr "Supprimer"
+
+#~ msgid "Choose document"
+#~ msgstr "Choisir un document"
+
+#~ msgid "Ok"
+#~ msgstr "Ok"
+
+#~ msgid "Background image"
+#~ msgstr "Image de fond"
+
+#~ msgid "Home"
+#~ msgstr "Accueil"
+
+#~ msgid "search"
+#~ msgstr "recherche"
+
+#~ msgid "Archive "
+#~ msgstr "Archive "
+
+#~ msgid "Author"
+#~ msgstr "auteur"
+
+#~ msgid "Blog archives"
+#~ msgstr "Archives du blog"
+
+#~ msgid "Search results"
+#~ msgstr "Résultat de recherche"
+
+#~ msgid ""
+#~ "By continuing your visit to this site, you accept the use of cookies or "
+#~ "other tracers"
+#~ msgstr ""
+#~ "En continuant votre visite sur ce site, vous acceptez l'utilisation de "
+#~ "cookies et autres traceurs"
+
+#~ msgid "More about"
+#~ msgstr "En savoir plus"
+
+#~ msgid "General options"
+#~ msgstr "Options générales"
+
+#~ msgid "Replace native title"
+#~ msgstr "Remplace le titre natif"
+
+#~ msgid "Subtitle"
+#~ msgstr "Sous-titre"
+
+#~ msgid "Hide title/woodmanager title"
+#~ msgstr "Cacher le titre de cette page"
+
+#~ msgid "Hide title or woodmanager title except in lists"
+#~ msgstr "Cacher le titre de cette page excepté dans les listes"
+
+#~ msgid "Hide thumbnail"
+#~ msgstr "Cacher l'image à la une"
+
+#~ msgid "Hide thumbnail except in lists"
+#~ msgstr "Cacher l'image à la une excepté dans les listes"
+
+#~ msgid "Badge"
+#~ msgstr "Badge"
+
+#~ msgid "Add awesome badge for new stuff !"
+#~ msgstr "Add awesome badge for new stuff !"
+
+#~ msgid "Badge's text"
+#~ msgstr "Texte du badge"
+
+#~ msgid "new"
+#~ msgstr "nouveau"
+
+#~ msgid "Events"
+#~ msgstr "Évènements"
+
+#~ msgid "Event"
+#~ msgstr "Évènement"
+
+#~ msgid "Edit Event"
+#~ msgstr "Editer un évènement"
+
+#~ msgid "New Event"
+#~ msgstr "Nouvel évènement"
+
+#~ msgid "Look Event"
+#~ msgstr "Voir un évènement"
+
+#~ msgid "Search Events"
+#~ msgstr "Rechercher un évènement"
+
+#~ msgid "Event Types"
+#~ msgstr "Types d'évènement"
+
+#~ msgid "Event Type"
+#~ msgstr "Type d'évènement"
+
+#~ msgid "Search Event Type"
+#~ msgstr "Recherche un type d'évènement"
+
+#~ msgid "All Event Types"
+#~ msgstr "Tous les types d'évènement"
+
+#~ msgid "Event Type's parent"
+#~ msgstr "Type d'évènement parent"
+
+#~ msgid "Edit Event Type"
+#~ msgstr "Editer un type d'évènement"
+
+#~ msgid "Update Event Type"
+#~ msgstr "Mettre à jour un type d'évènement"
+
+#~ msgid "Add Event Type"
+#~ msgstr "Ajouter un type d'évènement"
+
+#~ msgid "Name"
+#~ msgstr "Nom"
+
+#~ msgid "Begin"
+#~ msgstr "Début"
+
+#~ msgid "End"
+#~ msgstr "Fin"
+
+#~ msgid "dd/mm/yyyy"
+#~ msgstr "jj/mm/aaaa"
+
+#~ msgid "Show upcoming events"
+#~ msgstr "Affiche les évènements à venir"
+
+#~ msgid "Title"
+#~ msgstr "Titre"
+
+#, fuzzy
+#~ msgid "Number"
+#~ msgstr "Nombre"
+
+#~ msgid "to"
+#~ msgstr "au"
+
+#~ msgid "Comment"
+#~ msgstr "Commentaire"
+
+#~ msgid "One comment"
+#~ msgstr "Un commentaire"
+
+#, php-format
+#~ msgid "See % comments"
+#~ msgstr "Voir % commentaires"
+
+#~ msgid "No upcoming event"
+#~ msgstr "aucun évènement à venir"
+
+#~ msgid "WoodManager excerpt"
+#~ msgstr "Description alternative"
+
+#~ msgid "Let empty to get automatic excerpt from content"
+#~ msgstr "Laisser vide pour obtenir le résumé automatique"
+
+#~ msgid "Gallery options"
+#~ msgstr "Options de la galerie"
+
+#~ msgid "woodmanagerize inner content galleries"
+#~ msgstr "personnaliser les galeries de votre contenu"
+
+#~ msgid "Presentation"
+#~ msgstr "Présentation"
+
+#~ msgid "classic"
+#~ msgstr "classic"
+
+#~ msgid "slider"
+#~ msgstr "slider"
+
+#~ msgid "masonry"
+#~ msgstr "masonry"
+
+#~ msgid "random grid"
+#~ msgstr "grille aléatoire"
+
+#~ msgid "Autoplay"
+#~ msgstr "Autoplay"
+
+#~ msgid "Thumb navigation"
+#~ msgstr "Navigation par vignette"
+
+#~ msgid "Carousel"
+#~ msgstr "Carousel"
+
+#~ msgid "Carousel item width"
+#~ msgstr "Largeur des items du carousel"
+
+#~ msgid "Carousel item margin"
+#~ msgstr "Marge des items du carousel"
+
+#~ msgid "Height"
+#~ msgstr "Hauteur"
+
+#~ msgid "Format"
+#~ msgstr "Format"
+
+#~ msgid "square"
+#~ msgstr "carré"
+
+#~ msgid "portrait"
+#~ msgstr "portrait"
+
+#~ msgid "landscape"
+#~ msgstr "paysage"
+
+#~ msgid "Max width"
+#~ msgstr "Largeur max."
+
+#~ msgid "fully responsive"
+#~ msgstr "adaptée"
+
+#~ msgid "woodmanagerized"
+#~ msgstr "Personnalisé"
+
+#~ msgid "Max height"
+#~ msgstr "Hauteur max."
+
+#~ msgid "Auto"
+#~ msgstr "Auto"
+
+#~ msgid "Disable fancybox"
+#~ msgstr "Désactiver fancybox"
+
+#~ msgid "FancyBox"
+#~ msgstr "FancyBox"
+
+#~ msgid "Disable"
+#~ msgstr "Désactiver"
+
+#~ msgid "disable fancybox on this site"
+#~ msgstr "désactiver fancybox sur tout le site"
+
+#~ msgid "Code"
+#~ msgstr "Code"
+
+#, fuzzy
+#~ msgid "login"
+#~ msgstr "Identifiant"
+
+#~ msgid "password"
+#~ msgstr "mot de passe"
+
+#~ msgid "Login options"
+#~ msgstr "Options d'identification"
+
+#~ msgid "Logo"
+#~ msgstr "Logo"
+
+#~ msgid "Pagination options"
+#~ msgstr "Options de pagination"
+
+#~ msgid "Display pagination"
+#~ msgstr "Afficher la pagination"
+
+#~ msgid "Portfolios"
+#~ msgstr "Portfolios"
+
+#~ msgid "Portfolio"
+#~ msgstr "Portfolio"
+
+#~ msgid "Add Portfolio"
+#~ msgstr "Ajouter un portfolio"
+
+#~ msgid "Edit Portfolio"
+#~ msgstr "Editer un portfolio"
+
+#~ msgid "New Portfolio"
+#~ msgstr "Nouveau portfolio"
+
+#~ msgid "Look Portfolio"
+#~ msgstr "Voir un portfolio"
+
+#~ msgid "Search Portfolios"
+#~ msgstr "Rechercher un portfolio"
+
+#~ msgid "No Portfolio found"
+#~ msgstr "Aucun portfolio trouvé"
+
+#~ msgid "No Portfolio found in trash"
+#~ msgstr "Aucun portfolio trouvé dans la corbeille"
+
+#~ msgid "Portfolio Types"
+#~ msgstr "Types de portfolio"
+
+#~ msgid "Portfolio Type"
+#~ msgstr "Type de portfolio"
+
+#~ msgid "Search Portfolio Type"
+#~ msgstr "Rechercher un type de portfolio"
+
+#~ msgid "All Portfolio Types"
+#~ msgstr "Tous les types de portfolio"
+
+#~ msgid "Portfolio Type's parent"
+#~ msgstr "Type de portfolio parent"
+
+#~ msgid "Edit Portfolio Type"
+#~ msgstr "Editer un type de portfolio"
+
+#~ msgid "Update Portfolio Type"
+#~ msgstr "Mettre à jour un type de portfolio"
+
+#~ msgid "Add Portfolio Type"
+#~ msgstr "Ajouter un type de portfolio"
+
+#~ msgid "Thumb"
+#~ msgstr "Vignette"
+
+#~ msgid "sign out"
+#~ msgstr "déconnexion"
+
+#~ msgid "Private settings"
+#~ msgstr "Paramètres espace privé"
+
+#~ msgid "You want to"
+#~ msgstr "Vous voulez"
+
+#, fuzzy
+#~ msgid "do nothing"
+#~ msgstr "rien"
+
+#, fuzzy
+#~ msgid "go private this site"
+#~ msgstr "Site privé"
+
+#~ msgid "go private few elements"
+#~ msgstr "rendre privé quelques éléments"
+
+#~ msgid "Message"
+#~ msgstr "Message"
+
+#~ msgid "Private area"
+#~ msgstr "Zone privée"
+
+#, fuzzy
+#~ msgid "Private site"
+#~ msgstr "Site privé"
+
+#~ msgid "sign in"
+#~ msgstr "connexion"
+
+#~ msgid "Captcha"
+#~ msgstr "Captcha"
+
+#~ msgid "ERROR"
+#~ msgstr "ERREUR"
+
+#~ msgid "invalid captcha"
+#~ msgstr "captcha invalide"
+
+#~ msgid "<strong>ERROR</strong>: invalid captcha"
+#~ msgstr "<strong>ERREUR</strong>: captcha invalide"
+
+#~ msgid "Please solve the problem. This is an anti-spam security check."
+#~ msgstr ""
+#~ "Saisissez le résultat de l'addition. Ceci est une sécurité anti-spam."
+
+#~ msgid "Security"
+#~ msgstr "Sécurité"
+
+#~ msgid "Activate captcha"
+#~ msgstr "Activer captcha"
+
+#~ msgid ""
+#~ "add captcha on login, register and comment forms (Woocommerce supported)"
+#~ msgstr ""
+#~ "ajoute un captcha sur les formulaires de login, d'inscription et de "
+#~ "commentaire (Woocommerce supporté)"
+
+#~ msgid "Activate failtoban"
+#~ msgstr "Activer failtoban"
+
+#~ msgid ""
+#~ "block gross power hacking on login, register and comment forms "
+#~ "(Woocommerce supported)"
+#~ msgstr ""
+#~ "bloque les attaque par force brute sur les formulaires de login, "
+#~ "d'inscription et de commentaire (Woocommerce supporté)"
+
+#~ msgid "Too many tries - please wait 1min"
+#~ msgstr "Trop de tentatives - merci d'attendre 1min"
+
+#~ msgid "<strong>ERROR</strong>: Too many tries - please wait 1min"
+#~ msgstr "<strong>ERREUR</strong>: Trop de tentatives - merci d'attendre 1min"
+
+#~ msgid "numeric captcha"
+#~ msgstr "captcha numéric"
+
+#~ msgid "Generate a form-tag for a numeric captcha."
+#~ msgstr "Génère un captcha numérique"
+
+#~ msgid "Field type"
+#~ msgstr "Type de champ"
+
+#~ msgid "Insert Tag"
+#~ msgstr "Insérer de champ"
+
+#, php-format
+#~ msgid ""
+#~ "To use the value input through this field in a mail field, you need to "
+#~ "insert the corresponding mail-tag (%s) into the field on the Mail tab."
+#~ msgstr ""
+#~ "Pour utiliser cette valeur dans les champ du mail, vous devez insérer le "
+#~ "tag (%s) dans le corps du mail de l'onglet Mail."
+
+#~ msgid "Meta-title"
+#~ msgstr "Meta-titre"
+
+#~ msgid "Meta-description"
+#~ msgstr "Meta-description"
+
+#~ msgid "Meta-keyword"
+#~ msgstr "Meta-mot-clé"
+
+#~ msgid "SEO"
+#~ msgstr "SEO"
+
+#~ msgid "look at sitemap.xml"
+#~ msgstr "voir le sitemap.xml"
+
+#~ msgid "content title used by default"
+#~ msgstr "titre utilisé par défaut"
+
+#~ msgid "site description used by default"
+#~ msgstr "description du site utilisé par défaut"
+
+#~ msgid "separate keywords by comma"
+#~ msgstr "séparer les mots-clés par une virgule"
+
+#~ msgid "Open Graph"
+#~ msgstr "Open Graph"
+
+#~ msgid "Social network publication"
+#~ msgstr "Publication sur les réseaux sociaux"
+
+#~ msgid "OpenGraph-title"
+#~ msgstr "OpenGraph-titre"
+
+#~ msgid "meta-title used by default"
+#~ msgstr "meta-titre utilisé par défaut"
+
+#~ msgid "OpenGraph-description"
+#~ msgstr "OpenGraph-description"
+
+#~ msgid "meta-description used by default"
+#~ msgstr "meta-description utilisée par défaut"
+
+#~ msgid "OpenGraph-image"
+#~ msgstr "OpenGraph-image"
+
+#~ msgid "featured image used by default"
+#~ msgstr "image à la une utilisée par défaut"
+
+#~ msgid "Choose"
+#~ msgstr "Choisir"
+
+#~ msgid "Remove"
+#~ msgstr "Supprimer"
+
+#, php-format
+#~ msgid "page %s"
+#~ msgstr "page %s"
+
+#~ msgid "Exergue"
+#~ msgstr "Exergue"
+
+#~ msgid "Height Space"
+#~ msgstr "Espace en hauteur"
+
+#~ msgid "Icons"
+#~ msgstr "Icons"
+
+#~ msgid "Icons shortcodes"
+#~ msgstr "Icons shortcodes"
+
+#~ msgid "Social"
+#~ msgstr "Social"
+
+#~ msgid "Show socials links"
+#~ msgstr "Afficher les liens sociaux"
+
+#, fuzzy
+#~ msgid "backgrounded"
+#~ msgstr "Image de fond"
+
+#~ msgid "facebook"
+#~ msgstr "facebook"
+
+#~ msgid "twitter"
+#~ msgstr "twitter"
+
+#~ msgid "google+"
+#~ msgstr "google+"
+
+#~ msgid "linkedin"
+#~ msgstr "linkedin"
+
+#~ msgid "behance"
+#~ msgstr "behance"
+
+#~ msgid "pinterest"
+#~ msgstr "pinterest"
+
+#~ msgid "instagram"
+#~ msgstr "instagram"
+
+#~ msgid "vimeo"
+#~ msgstr "vimeo"
+
+#~ msgid "youtube"
+#~ msgstr "youtube"
+
+#~ msgid "dribbble"
+#~ msgstr "dribbble"
+
+#~ msgid "tumblr"
+#~ msgstr "tumblr"
+
+#~ msgid "flickr"
+#~ msgstr "flickr"
+
+#~ msgid "soundcloud"
+#~ msgstr "soundcloud"
+
+#~ msgid "mail"
+#~ msgstr "mail"
+
+#~ msgid "download"
+#~ msgstr "téléchargement"
+
+#~ msgid "Featured Video"
+#~ msgstr "Vidéo à la une"
+
+#~ msgid "Url"
+#~ msgstr "Url"
+
+#~ msgid "Wall"
+#~ msgstr "Mur"
+
+#~ msgid "insert elements in this"
+#~ msgstr "afficher des éléments dans "
+
+#~ msgid "Display"
+#~ msgstr "Afficher"
+
+#~ msgid "nothing"
+#~ msgstr "rien"
+
+#~ msgid "woodmanagerized…"
+#~ msgstr "Personnalisé..."
+
+#~ msgid "Type"
+#~ msgstr "Type"
+
+#~ msgid "All"
+#~ msgstr "Tous"
+
+#~ msgid "Order by"
+#~ msgstr "Trier par"
+
+#~ msgid "no order"
+#~ msgstr "aucun tri"
+
+#~ msgid "id"
+#~ msgstr "id"
+
+#~ msgid "author"
+#~ msgstr "autheur"
+
+#~ msgid "title"
+#~ msgstr "titre"
+
+#~ msgid "last modified date"
+#~ msgstr "date de dernière modif."
+
+#~ msgid "random"
+#~ msgstr "aléatoire"
+
+#~ msgid "num. order"
+#~ msgstr "numéro ordre"
+
+#~ msgid "descendant"
+#~ msgstr "descendant"
+
+#~ msgid "ascendant"
+#~ msgstr "ascendant"
+
+#~ msgid "Number limit"
+#~ msgstr "Nombre maximum"
+
+#~ msgid "Children of"
+#~ msgstr "Fils de"
+
+#~ msgid "First level"
+#~ msgstr "Premier niveau"
+
+#~ msgid "Position"
+#~ msgstr "Position"
+
+#~ msgid "after content"
+#~ msgstr "après le contenu"
+
+#~ msgid "before content"
+#~ msgstr "avant le contenu"
+
+#~ msgid "list"
+#~ msgstr "liste"
+
+#~ msgid "grid"
+#~ msgstr "grille"
+
+#~ msgid "Columns"
+#~ msgstr "Colonnes"
+
+#~ msgid "1"
+#~ msgstr "1"
+
+#~ msgid "2"
+#~ msgstr "2"
+
+#~ msgid "3"
+#~ msgstr "3"
+
+#~ msgid "4"
+#~ msgstr "4"
+
+#~ msgid "5"
+#~ msgstr "5"
+
+#~ msgid "6"
+#~ msgstr "6"
+
+#~ msgid "100%"
+#~ msgstr "100%"
+
+#~ msgid "50%"
+#~ msgstr "50%"
+
+#~ msgid "33%"
+#~ msgstr "33%"
+
+#~ msgid "25%"
+#~ msgstr "25%"
+
+#~ msgid "20%"
+#~ msgstr "20%"
+
+#~ msgid "16%"
+#~ msgstr "16%"
+
+#~ msgid "Display filters"
+#~ msgstr "Afficher les filtres"
+
+#, fuzzy
+#~ msgid "Carousel columns"
+#~ msgstr "Colonnes"
+
+#~ msgid "Update wall"
+#~ msgstr "Mettre à jour le mur"
+
+#~ msgid "Order elements"
+#~ msgstr "Ordonner les éléments"
+
+#~ msgid "No presentation found !"
+#~ msgstr "Aucune présentation trouvée"
+
+#~ msgid "more"
+#~ msgstr "plus"
+
+#~ msgid "Work In Progress"
+#~ msgstr "Site en maintenance"
+
+#~ msgid "Active"
+#~ msgstr "Activer"
+
+#~ msgid "only logged in user can look you site"
+#~ msgstr "seuls les utilisateurs connectés peuvent voir votre site"
+
+#~ msgid "Main menu"
+#~ msgstr "Menu principal"
+
+#~ msgid "Sidebar"
+#~ msgstr "Sidebar"
+
+#~ msgid "Shown in your site"
+#~ msgstr "Affiché dans votre site"
+
+#~ msgid ""
+#~ "We couldn't find the page you were looking for. This is either because"
+#~ msgstr "La page n'existe plus. Cela peut provenir des raisons suivantes"
+
+#~ msgid ""
+#~ "There is an error in the URL entered into your web browser. Please check "
+#~ "the URL and try again"
+#~ msgstr "Il y a une erreur dans l'url de votre navigateur"
+
+#~ msgid "The page you are looking for has been moved or deleted"
+#~ msgstr "La page que vous cherchez a été déplacée ou supprimée"
+
+#~ msgid "You can return to our homepage by"
+#~ msgstr "Retour vers l'accueil en"
+
+#~ msgid "clicking here"
+#~ msgstr "cliquant ici"
+
+#~ msgid "or you can try searching for the content you are seeking"
+#~ msgstr "ou rechercher votre contenu"
+
+#~ msgid "Archives %s"
+#~ msgstr "Archives %s"
+
+#~ msgid "Archives"
+#~ msgstr "Archives"
+
+#~ msgid "About %s"
+#~ msgstr "À propos %s"
+
+#~ msgid "View all posts by %s <span class=\"meta-nav\">&rarr;</span>"
+#~ msgstr "Voir tous les articles de %s <span class=\"meta-nav\">&rarr;</span>"
+
+#~ msgid "All posts by %s"
+#~ msgstr "Tous les articles de %s"
+
+#~ msgid "Comment navigation"
+#~ msgstr "Navigation des commentaires"
+
+#~ msgid "&larr; Older Comments"
+#~ msgstr "&larr; Anciens commentaires"
+
+#~ msgid "Newer Comments &rarr;"
+#~ msgstr "Commentaires récents &rarr;"
+
+#~ msgid "Comments are closed."
+#~ msgstr "Les commentaires sont fermés"
+
+#~ msgid "No result"
+#~ msgstr "Aucun résultat"
+
+#~ msgid "No content"
+#~ msgstr "Aucun contenu"
+
+#~ msgid "Read more <span class=\"meta-nav\">&rarr;</span>"
+#~ msgstr "Lire la suite <span class=\"meta-nav\">&rarr;</span>"
+
+#~ msgid "Page"
+#~ msgstr "Page"
+
+#~ msgid "'%s' results"
+#~ msgstr "Résultats pour '%s'"
+
+#~ msgid "Archives: %s"
+#~ msgstr "Archives: %s"
+
+#~ msgid "%s Archives"
+#~ msgstr "%s Archives"
+
+#~ msgid "This content doesn't exists anymore."
+#~ msgstr "Ce contenu n'existe plus"
+
+#~ msgid "hh:mm"
+#~ msgstr "hh:mm"
+
+#~ msgid "Private Site"
+#~ msgstr "Site privé"
+
+#~ msgid "Make your site private"
+#~ msgstr "Rendre votre site privé"
+
+#~ msgid "Login"
+#~ msgstr "Identifiant"
+
+#~ msgid "Password"
+#~ msgstr "Mot de passe"
+
+#~ msgid "unknown account"
+#~ msgstr "compte inconnu"
+
+#~ msgid ""
+#~ "Default values are used when nothing is recoverable (blog page for "
+#~ "example)"
+#~ msgstr ""
+#~ "Ces valeurs par défaut sont utilisées quand aucune autre donnée n'est "
+#~ "utilisable (page blog par exemple)"
+
+#~ msgid "Default meta-title"
+#~ msgstr "Meta-titre par défaut"
+
+#~ msgid "Default meta-description"
+#~ msgstr "Meta-description par défaut"
+
+#~ msgid "Default meta-keywords"
+#~ msgstr "Meta-mot-clé par défaut"
+
+#~ msgid "work in progress"
+#~ msgstr "site en maintenance"
+
+#~ msgid "you can drag and drop element to order them."
+#~ msgstr "vous pouvez glisser et déposer les éléments pour les ordonner"
+
+#~ msgid "use"
+#~ msgstr "utiliser"
+
+#~ msgid "to add element."
+#~ msgstr "pour ajouter un élément"
+
+#~ msgid "to remove element."
+#~ msgstr "pour supprimer un élément"
+
+#~ msgid "LOGIN"
+#~ msgstr "IDENTIFIANT"
+
+#~ msgid "PASSWORD"
+#~ msgstr "MOT DE PASSE"
+
+#~ msgid "Initial height"
+#~ msgstr "Hauteur initiale"
+
+#~ msgid ""
+#~ "Resolve this addition and put the result in field. It's a secure field to "
+#~ "be sure your are not a robot."
+#~ msgstr ""
+#~ "Saisisez le résultat de l'addition. Cette sécurité permet de s'assurer "
+#~ "que vous n'êtes pas un robot."
+
+#, fuzzy
+#~ msgid "RESULT OF"
+#~ msgstr "RESULTAT DE*"
+
+#, fuzzy
+#~ msgid "No thumb navigation"
+#~ msgstr "Navigation par vignette"
+
+#~ msgid "no thumb"
+#~ msgstr "aucune vignette"
+
+#~ msgid "Alalah le gros test !"
+#~ msgstr "Alalah le gros test ! (FR)"

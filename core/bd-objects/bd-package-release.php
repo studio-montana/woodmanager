@@ -43,7 +43,7 @@ if(!class_exists('BD_Package_Release')){
 			}
 			if ($package) {
 				$sql_query = 'SELECT * FROM '.WoodManager_BD::get_package_release_table_name($wpdb).' AS pr INNER JOIN '.WoodManager_BD::get_package_table_name($wpdb).' AS p ON pr.id_package = p.id WHERE p.id = '.$package.' AND pr.version LIKE \''.$version.'\'';
-				woodmanager_trace("BD_Package_Release - version_exists sql_query : {$sql_query}");
+				// woodmanager_trace("BD_Package_Release - version_exists sql_query : {$sql_query}");
 				$results = $wpdb->get_results($sql_query, OBJECT);
 				return !empty($results);
 			}
@@ -64,7 +64,7 @@ if(!class_exists('BD_Package_Release')){
 		public static function get_package_releases($where_clause = '1=1'){
 			global $wpdb;
 			$sql_query = 'SELECT * FROM '.WoodManager_BD::get_package_release_table_name($wpdb).' WHERE '.$where_clause;
-			woodmanager_trace("BD_Package_Release - get_package_releases sql_query : {$sql_query}");
+			// woodmanager_trace("BD_Package_Release - get_package_releases sql_query : {$sql_query}");
 			return $wpdb->get_results($sql_query, OBJECT);
 		}
 
