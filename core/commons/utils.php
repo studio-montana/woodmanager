@@ -356,7 +356,7 @@ function woodmanager_update_package_releases($package, $force_fetch = false) {
 						/**
 						 * NOTE
 						* - since 02/2020 github doesn't support authentication parameters as query_string
-						* - we must use 'user' header parameter with clientid:clientsecret
+						* - we must use 'Authorization' header parameter with clientid:clientsecret
 						* - more information : https://developer.github.com/changes/2020-02-10-deprecating-auth-through-query-param/
 						*/
 						'headers' => array(
@@ -512,13 +512,14 @@ function woodmanager_download_package($package_slug, $ball_url, $ext, $version, 
 				mkdir($dirname, 0755, true);
 			}
 		}
-
 		$github_clientid = woodmanager_get_option('github-clientid');
 		$github_clientsecret = woodmanager_get_option('github-clientsecret');
 		$ball_url = add_query_arg(array("client_id" => $github_clientid), $ball_url);
 		$ball_url = add_query_arg(array("client_secret" => $github_clientsecret), $ball_url);
-
-		$options  = array('http' => array('method' => 'GET', 'user_agent' => $_SERVER['HTTP_USER_AGENT']));
+		$options  = array('http' => array(
+				'method' => 		'GET',
+				'user_agent' => 	$_SERVER['HTTP_USER_AGENT'],
+		));
 		$context  = stream_context_create($options);
 		file_put_contents($final_path, file_get_contents($ball_url, false, $context));
 	}
