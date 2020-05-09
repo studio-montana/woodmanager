@@ -164,7 +164,7 @@ class WoodAPIResponse {
 		}
 		
 		if (woodmanager_is_active_package($package, $host, $key)){
-			$data = woodmanager_get_package_latest_release($package, $package_version, woodmanager_is_package_prerelease_enabled($package, $host, $key));
+			$data = json_encode(woodmanager_get_package_latest_release($package, $package_version, woodmanager_is_package_prerelease_enabled($package, $host, $key)));
 		}else{
 			$data = json_encode(array("error" => "'".$package."' ".__("package isn't active or doesn't exist", WOODMANAGER_PLUGIN_TEXT_DOMAIN)));
 		}

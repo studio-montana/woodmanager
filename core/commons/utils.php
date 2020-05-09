@@ -506,7 +506,7 @@ function woodmanager_get_package_latest_release($package_slug, $package_version,
 	$package = BD_Package::get_package_by_slug($package_slug);
 	if (!is_object($package)){
 		// EXIT
-		return json_encode(array("error" => __("No package found for slug '{$package->slug}'")));
+		return array("error" => __("No package found for slug '{$package->slug}'"));
 	}
 	
 	/**
@@ -514,7 +514,7 @@ function woodmanager_get_package_latest_release($package_slug, $package_version,
 	 */
 	if (!BD_Package_Release::is_valid_version_format($package_version)) {
 		// EXIT
-		return json_encode(array("error" => __("Package version '{$package_version}' format is invalid - '{$package->slug}'")));
+		return array("error" => __("Package version '{$package_version}' format is invalid - '{$package->slug}'"));
 	}
 	
 	// Fetch Github API to retrieve releases and update our DB (if necessary)
@@ -565,11 +565,11 @@ function woodmanager_get_package_latest_release($package_slug, $package_version,
 	}
 	
 	if (!is_object($latest_release)) {
-		// EXIT
-		return json_encode(array("error" => __("No release found for package '{$package->slug}'")));
+		// EXIT - IMPORTANT : return empty array - it's not an error, just there is no release at this time
+		return array();
 	}
 	
-	return $latest_release->info;
+	return json_decode($latest_release->info, true);
 }
 endif;
 
