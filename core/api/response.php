@@ -140,6 +140,10 @@ class WoodAPIResponse {
 		$package_version = '';
 		if (isset($_GET['api-package-version']) && !empty($_GET['api-package-version'])){
 			$package_version = urldecode($_GET['api-package-version']);
+		} else if (isset($_GET['package-version']) && !empty($_GET['package-version'])){
+			$package_version = urldecode($_GET['package-version']);
+		} else if (isset($_GET['version']) && !empty($_GET['version'])){
+			$package_version = urldecode($_GET['version']);
 		}
 
 		if (empty($package_version)) {

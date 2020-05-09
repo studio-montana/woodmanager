@@ -2,7 +2,7 @@
 
 /**
  * Plugin Name: WoodManager
- * Description: Manage your wooden packages easily
+ * Description: Manage Wood plugins/themes package for Wordpress (activation/update/registration/etc.)
  * Version: 2.0.0
  * Author: Studio Montana
  * Author URI: http://www.studio-montana.com/
